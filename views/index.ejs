@@ -2,7 +2,7 @@
 
 <body class="bg-gray-100">
     <canvas id="confetti" class="fixed w-screen h-screen top-0 pointer-events-none"></canvas>
-    <main class="h-screen overflow-hidden">
+    <main class="h-screen flex flex-col overflow-hidden">
         <div id="intro" class="absolute w-full h-screen bg-purple-700 sticky top-0 items-center justify-center flex">
             <div class="text-4xl text-white flex flex-col md:flex-row items-center justify-center gap-3">
                 <div class="flex items-center">
@@ -23,7 +23,7 @@
             </div>
         </div>
     
-        <div id="surprises" class="w-full h-screen flex flex-wrap gap-12 p-6 justify-center overflow-auto">
+        <div id="surprises" class="transition-all duration-1000 hidden opacity-0 m-auto max-w-screen-2xl w-full flex flex-wrap gap-12 p-6 justify-center items-center overflow-auto">
             <% for(let i = 1; i <= 30; i++) { %>
                 <% const s = allSurprises[i - 1] %>
                 <% if (!s || (!s.viewed && !s.revealDate)) { %>
@@ -112,7 +112,12 @@
     $("#arrow").on('click', () => {
         const delay = 1000;
         $("#intro").slideUp(delay);
-        setTimeout(() => $('main').removeClass('overflow-hidden'), delay);
+        setTimeout(() => {
+            $('main').removeClass('overflow-hidden');
+            $('#surprises').removeClass('hidden');
+            $("#intro").remove();
+            setTimeout(() => $('#surprises').toggleClass('opacity-0 opacity-100'), 10);
+        }, delay);
     });
 
     function handleClick(surpriseCard) {
