@@ -1,0 +1,332 @@
+<body class="bg-sky-400">
+    <%- include('../partials/head') %>
+
+    <div onclick="openCreateModal()" class="cursor-pointer text-white w-full h-12 bg-green-600 hover:bg-green-700 active:bg-green-800 sticky top-0 items-center justify-center flex z-10">
+        Create Surprise
+    </div>
+    
+    <div id="surprises-container" class="dark:bg-opacity-95 bg-opacity-95 flex items-center justify-center flex-wrap gap-12 lg:gap-20 lg:overflow-hidden p-6">
+        <% surprises.forEach(s => { %>
+            <div class="bg-gray-200 relative flex h-fit w-96 flex flex-col bg-white rounded justify-center p-8 text-black gap-y-4 s-card <%= s.completedAt ? "border-green-500" : ""%> border-2" id="surprise-<%= s._id %>" data-id="<%= s._id %>">
+                <div class="rounded-full absolute text-4xl right-2 top-2 bg-white flex items-center justify-center cursor-pointer w-8 h-8" onclick="openDeletemodal('<%= s._id %>')">&times;</div>
+                <div class="absolute left-2 top-2 flex items-center justify-center gap-x-2">
+                    <div id="status-<%= s._id %>" onclick="changeCompletedStatus('<%= s._id %>')" class="cursor-pointer flex items-center justify-center px-2 rounded border-2 <%= s.completedAt ? "completed bg-blue-400 text-white border-transparent" : "border-black" %>"><%= s.completedAt ? "completed" : "incomplete" %></div>
+                    <div id="viewed-<%= s._id %>" onclick="changeviewedStatus('<%= s._id %>')" class="cursor-pointer flex items-center justify-center px-2 rounded border-2 <%= s.viewed ? "viewed bg-blue-400 text-white border-transparent" : "border-black" %>"><%= s.viewed ? "viewed" : "not viewed yet" %></div>
+                </div>
+                <div class="flex flex-col gap-1 mt-4">
+                    <label class="text-xs" for="title-<%= s._id %>">Title</label>
+                    <input class="rounded text-sm" id="title-<%= s._id %>" type="text" value="<%= s.title %>">
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="text-xs" for="icon-class-<%= s._id %>">Icon Class</label>
+                    <input class="rounded text-sm" id="icon-class-<%= s._id %>" type="text" value="<%= s.iconClass %>">
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="text-xs" for="description-<%= s._id %>">Description</label>
+                    <textarea class="rounded text-sm" id="description-<%= s._id %>"><%= s.description %></textarea>
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="text-xs" for="variety-<%= s._id %>">Variety</label>
+                    <select class="cursor-pointer rounded" id="variety-<%= s._id %>">
+                        <option <%= s.variety === "cute" ? "selected" : "" %> value="cute">cute</option>
+                        <option <%= s.variety === "romantic" ? "selected" : "" %> value="romantic">romantic</option>
+                        <option <%= s.variety === "overdue" ? "selected" : "" %> value="overdue">overdue</option>
+                        <option <%= s.variety === "sweet" ? "selected" : "" %> value="sweet">sweet</option>
+                        <option <%= s.variety === "special" ? "selected" : "" %> value="special">special</option>
+                        <option <%= s.variety === "mystery" ? "selected" : "" %> value="mystery">mystery</option>
+                    </select>
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="text-xs" for="magnitude-<%= s._id %>">Magnitude</label>
+                    <select class="cursor-pointer rounded" id="magnitude-<%= s._id %>">
+                        <option <%= s.variety === "small" ? "selected" : "" %> value="small">small</option>
+                        <option <%= s.variety === "medium" ? "selected" : "" %> value="medium">medium</option>
+                        <option <%= s.variety === "large" ? "selected" : "" %> value="large">large</option>
+                    </select>
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="text-xs" for="reveal-date-<%= s._id %>">Reveal Date</label>
+                    <input type="datetime-local" class="rounded reveal-date" id="reveal-date-<%= s._id %>" data-reveal-date="<%= s.revealDate %>">
+                </div>
+                <div class="text-white h-8 w-full flex items-center justify-center bg-blue-500 hover:bg-blue-600 active:bg-blue-700 rounded cursor-pointer" onclick="handleUpdate('<%= s._id %>')" data-id="<%= s._id %>">Update</div>
+            </div>
+        <% }) %>
+        <% if (!surprises.length) { %>
+            <div>No surprises yet</div>
+        <% } %>
+    </div>
+
+    <div id="create-modal" class="top-0 hidden w-screen h-screen flex items-center justify-center fixed bg-blend-darken bg-black/20 backdrop-blur-sm">
+        <div class="relative flex h-fit w-96 flex flex-col bg-white rounded justify-center p-8 text-black gap-y-4">
+            <div class="absolute text-4xl right-2 top-2 bg-white flex items-center justify-center cursor-pointer w-8 h-8" onclick="closeCreateModal()">&times;</div>
+            <h1 class="text-2xl">Create Surprise</h1>
+            <div class="flex flex-col gap-1 mt-4">
+                <label for="new-title" class="text-xs">Title</label>
+                <input id="new-title" type="text" class="rounded text-sm">
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="text-xs" for="new-icon-class">Icon Class</label>
+                <input class="rounded text-sm" id="new-icon-class" type="text">
+            </div>
+            <div class="flex flex-col gap-1">
+                <label for="new-description" class="text-xs">Description</label>
+                <textarea class="rounded text-sm" id="new-description"></textarea>
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="text-xs" for="new-variety">Variety</label>
+                <select class="cursor-pointer rounded" id="new-variety">
+                    <option value="cute">cute</option>
+                    <option value="romantic">romantic</option>
+                    <option value="overdue">overdue</option>
+                    <option selected value="sweet">sweet</option>
+                    <option value="special">special</option>
+                    <option value="mystery">mystery</option>
+                </select>
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="text-xs" for="new-magnitude">Magnitude</label>
+                <select class="cursor-pointer rounded" id="new-magnitude">
+                    <option value="small">small</option>
+                    <option value="medium">medium</option>
+                    <option value="large">large</option>
+                </select>
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="text-xs" for="new-reveal-date">Reveal Date</label>
+                <input type="datetime-local" class="rounded" id="new-reveal-date">
+            </div>
+            <div class="text-white h-8 w-full flex items-center justify-center bg-blue-500 hover:bg-blue-600 active:bg-blue-700 rounded cursor-pointer" onclick="handleCreate()">Create</div>
+        </div>
+    </div>
+
+    <div id="delete-modal" class="top-0 hidden w-screen h-screen flex items-center justify-center fixed bg-blend-darken bg-black/20 backdrop-blur-sm">
+        <div class="relative flex h-fit w-96 flex flex-col bg-white rounded justify-center p-8 text-black gap-y-4">
+            <div class="absolute text-4xl right-2 top-2 bg-white flex items-center justify-center cursor-pointer w-8 h-8" onclick="closeDeleteModal()">&times;</div>
+            <h1 class="text-2xl">Deleting Surprise</h1>
+            <p></p>
+            <div class="text-white h-8 w-full flex items-center justify-center bg-red-500 hover:bg-red-600 active:bg-red-700 rounded cursor-pointer" onclick="handleDelete()">Delete</div>
+        </div>
+    </div>
+    
+    <script>
+
+        function convertDateString(inputDateString) {
+            const inputDate = new Date(inputDateString);
+
+            if (isNaN(inputDate)) {
+                return "Invalid Date";
+            }
+
+            const year = inputDate.getFullYear();
+            const month = String(inputDate.getMonth() + 1).padStart(2, '0');
+            const day = String(inputDate.getDate()).padStart(2, '0');
+            const hours = String(inputDate.getHours()).padStart(2, '0');
+            const minutes = String(inputDate.getMinutes()).padStart(2, '0');
+
+            return `${year}-${month}-${day}T${hours}:${minutes}`;
+        }
+
+        $(document).ready(() => {
+            $('.reveal-date').each((idx, elem) => {
+                const dateVale = convertDateString($(elem).data('reveal-date'));
+                $(elem).val(dateVale);
+            });
+        })
+
+        function changeviewedStatus(surpriseID) {
+            const viewedEl = $(`#viewed-${surpriseID}`);
+            const isViewed = viewedEl.hasClass('viewed');
+            viewedEl
+                .toggleClass('viewed bg-blue-400 text-white border-transparent border-black')
+                .text(isViewed ? "not yet viewed" : "viewed");
+        }
+
+        function changeCompletedStatus(surpriseID) {
+            const statusEl = $(`#status-${surpriseID}`);
+            const isCompleted = statusEl.hasClass('completed');
+            statusEl
+                .toggleClass('completed bg-blue-400 text-white border-transparent border-black')
+                .text(isCompleted ? "incomplete" : "completed");
+        }
+
+        function handleDelete() {
+            $.ajax({
+                url: `/admin/surprise/${$('.deleting').data('id')}`,
+                method: "DELETE",
+                success: function(deletedSurprise, status) {
+                    if (status === "success") {
+                        $('.deleting').remove();
+                        console.log(deletedSurprise);
+                        closeDeleteModal();
+                    } else {
+                        swal({
+                            icon: 'error',
+                            title: 'Error',
+                            text: "Something went wrong"
+                        });
+                    }
+                },
+                error: function() {
+                    console.log(arguments);
+                }
+            });
+        }
+
+        function closeDeleteModal() {
+            $('#delete-modal').addClass('hidden');
+        }
+
+        function openDeletemodal(surpriseID) {
+            const title = $(`#title-${surpriseID}`).val();
+            $('.s-card').removeClass('deleting');
+            $(`#surprise-${surpriseID}`).addClass('deleting');
+            $('#delete-modal').removeClass('hidden');
+            $('#delete-modal')
+                .find('p')
+                .text(`Are you sure you want to delete the surprise: "${title}"? This cannot be undone`);
+        }
+
+        function updateTimeInput(surpriseId, dateVal, selector) {
+            setTimeout(() => {
+                // This way we ensure that the input is updated for the client
+                const newDateVal = dateVal ? convertDateString(dateVal) : "";
+                $(`${selector}-${surpriseId}`).val(newDateVal);
+            }, 10);
+        }
+
+        function handleUpdate(surpriseID) {
+            let revealDate;
+            if ($(`#reveal-date-${surpriseID}`).val()) {
+                revealDate = new Date($(`#reveal-date-${surpriseID}`).val());
+            }
+            const data = {
+                title: $(`#title-${surpriseID}`).val(),
+                description: $(`#description-${surpriseID}`).val(),
+                magnitude: $(`#magnitude-${surpriseID}`).val(),
+                variety: $(`#variety-${surpriseID}`).val(),
+                iconClass: $(`#icon-class-${surpriseID}`).val(),
+                completed: $(`#status-${surpriseID}`).hasClass('completed'),
+                viewed: $(`#viewed-${surpriseID}`).hasClass('viewed'),
+                revealDate,
+            };
+            $.ajax({
+                url: `/admin/surprise/${surpriseID}`,
+                method: "PUT",
+                data,
+                success: surprise => {
+                    const icon = surprise.error ? "error" : "success";
+                    const title = surprise.error ? "Error" : "Success";
+                    const text = surprise.error ? surprise.error : `${surprise.title} successfully updated!`;
+                    updateTimeInput(surprise._id, surprise.revealDate, "#reveal-date");
+                    
+                    swal({ title, icon, text });
+                },
+                error: function() {
+                    console.log(arguments);
+                }
+            });
+        }
+        
+        function handleCreate() {
+            const data = {
+                title: $("#new-title").val().trim(),
+                description: $("#new-description").val().trim(),
+                variety: $("#new-variety").val().trim(),
+                magnitude: $("#new-magnitude").val().trim(),
+                iconClass: $("#new-icon-class").val().trim(),
+                revealDate: $("#new-reveal-date").val().trim(),
+            };
+
+            $.ajax({
+                url: "/admin/surprise",
+                method: "POST",
+                data,
+                success: newSurprise => {
+                    console.log(newSurprise);
+                    if (newSurprise.error) {
+                        swal({
+                            icon: "error",
+                            title: "Error",
+                            text: newSurprise.error,
+                        });
+                    } else {
+                        if (!data.revealDate) {
+                            swal({
+                                icon: "warning",
+                                title: "Invalid Date",
+                                text: "You didn't completely fill out the revealDate fyi, so it wasn't saved"
+                            });
+                        };
+                        $("#surprises-container").append(`
+                        <div class="relative flex h-fit w-96 flex flex-col bg-white rounded justify-center p-8 text-black gap-y-4 s-card" id="surprise-${newSurprise._id}" data-id="${newSurprise._id}">
+                            <div class="absolute text-4xl right-2 top-2 bg-white flex items-center justify-center cursor-pointer w-8 h-8" onclick="openDeletemodal('${newSurprise._id}')">&times;</div>
+                            <div class="absolute left-2 top-2 flex items-center justify-center gap-x-2">
+                                <div id="status-${newSurprise._id}" onclick="changeCompletedStatus('${newSurprise._id}')" class="cursor-pointer flex items-center justify-center px-2 rounded border-2 ${newSurprise.completedAt ? "completed bg-blue-400 text-white border-transparent" : "border-black"}">${newSurprise.completedAt ? "completed" : "incomplete"}</div>
+                                <div id="viewed-${newSurprise._id}" onclick="changeviewedStatus('${newSurprise._id}')" class="cursor-pointer flex items-center justify-center px-2 rounded border-2 ${newSurprise.viewed ? "viewed bg-blue-400 text-white border-transparent" : "border-black"}">${newSurprise.viewed ? "viewed" : "not viewed yet"}</div>
+                            </div>
+                            <div class="flex flex-col gap-1 mt-4">
+                                <label class="text-xs" for="title-${newSurprise._id}">Title</label>
+                                <input class="rounded text-sm" id="title-${newSurprise._id}" type="text" value="${newSurprise.title}">
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <label class="text-xs" for="icon-class-${newSurprise._id}">Icon Class</label>
+                                <input class="rounded text-sm" id="icon-class-${newSurprise._id}" type="text" value="${newSurprise.iconClass}">
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <label class="text-xs" for="description-${newSurprise._id}">Description</label>
+                                <textarea class="rounded text-sm" id="description-${newSurprise._id}">${newSurprise.description}</textarea>
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <label class="text-xs" for="variety-${newSurprise._id}">Variety</label>
+                                <select class="cursor-pointer rounded" id="variety-${newSurprise._id}">
+                                    <option ${newSurprise.variety === "cute" ? "selected" : ""} value="cute">cute</option>
+                                    <option ${newSurprise.variety === "romantic" ? "selected" : ""} value="romantic">romantic</option>
+                                    <option ${newSurprise.variety === "overdue" ? "selected" : ""} value="overdue">overdue</option>
+                                    <option ${newSurprise.variety === "sweet" ? "selected" : ""} value="sweet">sweet</option>
+                                    <option ${newSurprise.variety === "special" ? "selected" : ""} value="special">special</option>
+                                    <option ${newSurprise.variety === "mystery" ? "selected" : ""} value="mystery">mystery</option>
+                                </select>
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <label class="text-xs" for="magnitude-${newSurprise._id}">Magnitude</label>
+                                <select class="cursor-pointer rounded" id="magnitude-${newSurprise._id}">
+                                    <option ${newSurprise.variety === "small" ? "selected" : ""} value="small">small</option>
+                                    <option ${newSurprise.variety === "medium" ? "selected" : ""} value="medium">medium</option>
+                                    <option ${newSurprise.variety === "large" ? "selected" : ""} value="large">large</option>
+                                </select>
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <label class="text-xs" for="reveal-date-${newSurprise._id}">Reveal Date</label>
+                                <input type="datetime-local" class="rounded reveal-date" id="reveal-date-${newSurprise._id}" data-reveal-date="${newSurprise.revealDate}">
+                            </div>
+                            <div class="text-white h-8 w-full flex items-center justify-center bg-blue-500 hover:bg-blue-600 active:bg-blue-700 rounded cursor-pointer" onclick="handleUpdate('${newSurprise._id}')" data-id="${newSurprise._id}">Update</div>
+                        </div>
+                        `);
+                        closeCreateModal();
+                        resetCreateModal();
+                        
+                        updateTimeInput(newSurprise._id, newSurprise.revealDate, "#reveal-date");
+                    }
+                },
+                error: function() {
+                    console.log(arguments);
+                }
+            });
+        }
+
+        function closeCreateModal() {
+            $('#create-modal').addClass('hidden');
+        }
+
+        function resetCreateModal() {
+            $("#new-title").val("");
+            $("#new-description").val("");
+        }
+
+        function openCreateModal() {
+            $("#create-modal").removeClass('hidden');
+        }
+        
+    </script>
+    
+</body>

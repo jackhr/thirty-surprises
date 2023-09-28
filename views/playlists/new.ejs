@@ -1,0 +1,17 @@
+<%- include('../partials/header') %>
+
+  <div class="title-div">
+    <h1><%= title %></h1>
+    <form id="new-playlist-form" action="/playlists" method="POST" encType="multipart/form-data">
+      <label>Title:</label>
+      <input type="text" name="title" placeholder="My Dope Playlist">
+      <label>Cover Photo:</label>
+      <input type="file" name="img">
+      <label id="event">Description:</label>
+      <input type="text" name="about" placeholder="Give your playlist a catchy description!">
+      <button type="submit">FORGE</button>
+    </form>
+  </div>
+
+<%- include('../partials/footer') %>
+

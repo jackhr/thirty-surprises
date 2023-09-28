@@ -1,0 +1,235 @@
+<%- include('../partials/header') %>
+
+  <div class="user-div">
+    <a href="/users/<%= playlist.user._id %>"><img class="user-avatar" src="<%= playlist.user.avatar %>"></a>
+  </div>
+  <h2 id="img-load-err-msg">Give the page a quick refresh ;)</h2>
+  <% if (editFunc) { %>
+    <div id="msg-div">
+      <h2>You have to choose a photo first!</h2>
+    </div>
+  <% } else { %>
+    <br><br>
+  <% } %>
+  <div class="playlist-div content-wrapper">
+    <div class="playlist-header-div">
+      <% if (!!playlist.img) { %>
+        <img id="cover-img" style="width: 200px;" src="<%= playlist.img %>" alt="Album artwork uploaded by the user">
+      <% } else { %>
+        <% if (playlist.songs.length) { %>
+          <div class="artwork-div">
+            <% for (let i = 0; i < 4; i++) { %>
+              <% if (!playlist.songs[i]) break; %>
+              <% if (playlist.songs.length < 4) { %>
+                <img style="width: 200px;" src="<%= playlist.songs[i].artistAvatar %>">
+              <% break; %>
+              <% } %>
+              <img style="width: 100px;" src="<%= playlist.songs[i].artistAvatar %>">
+              <% if (i === 1) { %>
+                <br>
+              <% } %>
+            <% } %>
+          </div>
+        <% } else { %>
+          <img style="width: 200px;" src="/images/white-double-quaver.png">
+        <% } %>
+      <% } %>
+      <div>
+        <h1 class="playlist-title"><%= playlist.title || "Untitled" %></h1>
+        <% if (user && playlist.user._id.equals(user._id)) { %>
+          <form class="edit-button" action="/playlists/<%= playlist._id %>/title?_method=PUT" method="POST">
+            <input placeholder="<%= playlist.title %>" type="text" name="title">
+            <button type="submit">Rename</button>
+          </form>
+        <% } %>
+      </div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Track</th>
+          <th>Artist</th>
+          <th>Album</th>
+          <th>Duration</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><div class="table-line"></div></td>
+          <td><div class="table-line"></div></td>
+          <td><div class="table-line"></div></td>
+          <td><div class="table-line"></div></td>
+          <td><div id="last-line" class="table-line"></div></td>
+        </tr>
+        <% playlist.songs.forEach((s, idx) => { %>
+          <form action="/songs/<%= s._id %>?_method=DELETE" method="POST">
+            <tr>
+              <td><%= idx + 1 %></td>
+              <td><%= s.title %></td>
+              <td><%= s.artist %></td>
+              <td><%= s.album %></td>
+              <td>
+                <div id="delete-song-div">
+                  <%= s.time %>
+                  <% if (user && playlist.user._id.equals(user._id)) { %>
+                    <button class="edit-button" id="delete-song-button" type="submit">X</button>
+                  <% } %>
+                </div>
+              </td>
+            </tr>
+          </form>
+        <% }); %>
+        <tr>
+          <td><div class="table-line"></div></td>
+          <td><div class="table-line"></div></td>
+          <td><div class="table-line"></div></td>
+          <td><div class="table-line"></div></td>
+          <td><div id="last-line" class="table-line"></div></td>
+        </tr>
+        <tr>
+          <td>
+            <% if (!user || !playlist.user._id.equals(user._id)) { %>
+              <a class="time-span" href="/users/<%= playlist.user._id %>">More From User</a>
+            <% } %>
+          </td>
+          <td></td>
+          <td></td>
+          <td></td>
+            <td>
+              <span class="time-span">
+                <%= playlist.songs.length %>
+                <%= playlist.songs.length === 1 ? ' song, ' : ' songs, ' %>
+                <%= playlist.duration %>
+              </span>
+            </td>
+        </tr>
+      </tbody>
+    </table>
+    <% if (user && playlist.user._id.equals(user._id)) { %>
+      <br>
+      <div>
+        <button id="edit-playlist">EDIT</button>
+        <br class="edit-button"><br class="edit-button">
+        <a class="edit-button" id="add-songs" href="/playlists/<%= playlist._id %>/search">ADD SONGS</a>
+        <br class="edit-button">
+        <form class="edit-button" id="add-cover-img-form" action="/playlists/<%= playlist._id %>/image?_method=PUT" method="POST" enctype="multipart/form-data">
+          <button id="add-cover-img-btn" type="submit">
+            <%= playlist.img ? "CHANGE" : "ADD" %> ARTWORK
+          </button>
+          <input id="add-cover-img" type="file" name="img">
+        </form>
+        <br>
+        <% if (playlist.img) { %>
+          <form action="/playlists/<%= playlist._id %>/image?_method=DELETE" method="POST">
+            <button class="edit-button" id="delete-cover-img" type="submit">DELETE ARTWORK</button>
+          </form>
+        <% } %>
+        <form action="/playlists/<%= playlist._id %>?_method=DELETE" method="POST">
+          <button class="edit-button" id="delete-playlist" type="submit">DELETE PLAYLIST</button>
+        </form>
+      </div>
+    <% } %>
+  </div>
+  <div id="info-div">
+    <h2>About:</h2>
+    <p> <%= playlist.about %></p>
+    <% if (user && playlist.user._id.equals(user._id)) { %>
+      <form action=""></form>
+      <form action="/playlists/<%= playlist._id %>/description?_method=PUT" method="POST">
+        <input name="about">
+        <button type="submit">EDIT</button>
+      </form>
+    <% } %>
+    <br><br>
+    <% if (user) { %>
+      <h2>Add a comment...</h2>
+      <form action="/playlists/<%= playlist._id %>/comments" method="POST">
+        <input name="content">
+        <button type="submit">ADD COMMENT</button>
+      </form>
+    <% } %>
+    <div id="comment-section">
+      <% if (playlist.comments.length) { %>
+        <% playlist.comments.forEach(c => { %>
+          <h2><%= c.userName %></h2>
+          <div id="comment-div">
+            <img class="user-avatar" src="<%= c.userAvatar %>">
+            <p><%= c.content %></p>
+            <% if (user && c.userId.equals(user._id)) { %>
+              <button id="edit-comment-btn">EDIT</button>
+            <% } %>
+          </div>
+          <% if (user && c.userId.equals(user._id)) { %>
+            <div id="edit-comment">
+              <br>
+              <form action="/comments/<%= c._id %>?_method=PUT" method="POST">
+                <textarea name="content" cols="50" rows="5"><%= c.content %></textarea>
+                <br><br>
+                <button id="update-comment" type="submit">UPDATE COMMENT</button>
+              </form>
+              <form action="/comments/<%= c._id %>?_method=DELETE" method="POST">
+                <button id="delete-comment" type="submit">DELETE</button>
+              </form>
+            </div>
+          <% } %>
+        <% }); %>
+      <% } else { %>
+        <p>There are no comments yet!</p>
+      <% } %>
+    </div>
+  </div>
+  <div id="editFunc" style="display: none;"><%= editFunc %></div>
+
+  <script>
+    const editCommentBtn = document.getElementById('edit-comment-btn');
+    const coverImgEl = document.getElementById('cover-img');
+    const errMsg = document.getElementById('img-load-err-msg');
+    const msgEl = document.getElementById('msg-div');
+    const editFunc = document.getElementById('editFunc');
+    const editEl = document.getElementById('edit-playlist');
+    const playlistTitleEl = document.getElementsByClassName('playlist-title')[0];
+    const hiddenEls = document.getElementsByClassName('edit-button');
+    const commentBtns = document.getElementById('edit-comment');
+    let editPlaylist = true;
+    let editComment = true;
+    if (editFunc.innerText.length === 4) {
+      for (let i = 0; i < hiddenEls.length; i++) {
+        if (hiddenEls[i].id === 'add-cover-img-form') {
+          hiddenEls[i].style.display = "flex";
+        } else hiddenEls[i].style.display = "inherit";
+      }
+      editEl.innerHTML = "DONE";
+      editPlaylist = !editPlaylist;
+    }
+    if (coverImgEl) {
+      coverImgEl.addEventListener('error', () => {
+        errMsg.style.display = "block";
+      });
+    }
+    if (editEl) {
+      editEl.addEventListener('click', () => {
+        playlistTitleEl.style.display = editPlaylist ? "none" : "inherit";
+        for (let i = 0; i < hiddenEls.length; i++) {
+          hiddenEls[i].style.display = editPlaylist ? (
+            hiddenEls[i].id === 'add-cover-img-form' ? "flex" : "inherit"
+            ) : "none";
+          }
+        editEl.innerHTML = editPlaylist ? "DONE" : "EDIT";
+        editPlaylist = !editPlaylist;
+        // This if statement must be last in the function
+        if (editFunc) {
+          msgEl.innerHTML = "<br><br>";
+        }
+      });
+    }
+    if (editCommentBtn) {
+      editCommentBtn.addEventListener('click', () => {
+        commentBtns.style.display = editComment ? "inherit" : "none";
+        editCommentBtn.innerHTML = editComment ? "DONE" : "EDIT";
+        editComment = !editComment;
+      });
+    }
+  </script>
+
+<%- include('../partials/footer') %>

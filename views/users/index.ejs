@@ -1,0 +1,26 @@
+<%- include('../partials/header') %>
+
+  <div id="curator-div">
+    <% if (playlistUsers.length) { %>
+      <h1>Playlist Curators</h1>
+      <div id="playlist-users-div">
+        <% playlistUsers.forEach(user => { %>
+          <a href="/users/<%= user._id %>">
+            <img class="user-avatar" src="<%= user.avatar %>" alt="">
+          </a>
+        <% }); %>
+      </div>
+    <% } else { %>
+      <div id="no-users-div">
+        <p>There's no one here but you...</p>
+        <% if (user) { %>
+          <img class="user-avatar" src="<%= user.avatar %>" alt="">
+          <a class="new-playlist" href="/playlists/new"><img class="new-playlist-img" src="/images/add-playlist-icon-white.png">&nbsp;&nbsp;Make a new Playlist</a>
+        <% } else { %>
+          <a href="/auth/google">Log In!</a>
+        <% } %>
+      </div>
+    <% } %>
+  </div>
+
+<%- include('../partials/footer') %>
