@@ -52,7 +52,10 @@
                             <h1 class="transition-all duration-1000 <%= s.viewed ? "opacity-100" : "opacity-0" %> text-lg mb-2 font-extrabold"><%= s.title %></h1>
                             <p class="transition-all duration-1000 <%= s.viewed ? "opacity-100" : "opacity-0" %>"><%= s.description %></p>
                             <% if (!s.viewed && s.revealDate) { %>
-                                <div class="transition-all duration-1000 opacity-100 countdown absolute w-full text-gray-500 text-xl text-center bottom-0 left-0"></div>
+                                <div class="countdown-container absolute w-full h-40 text-gray-500 text-xl text-center bottom-0 left-0">
+                                    <div class="transition-all duration-1000 opacity-100 countdown absolute w-full bottom-0"></div>
+                                    <div class="transition-all duration-1000 opacity-0 reveal-date absolute w-full bottom-0 text-base"><%= s.revealDate.toLocaleString().replace(/\b(\d{1,2}:\d{1,2}):\d{1,2}\b/g, '$1') %></div>
+                                </div>
                             <% } %>
                         </div>
                     </div>
@@ -113,8 +116,10 @@
     });
 
     function handleClick(surpriseCard) {
-        console.log(surpriseCard);
-        if ($(surpriseCard).hasClass('upcoming')) return handleJiggle(surpriseCard);
+        if ($(surpriseCard).hasClass('upcoming')) {
+            $(surpriseCard).find(".countdown-container *").toggleClass("opacity-0 opacity-100");
+            return handleJiggle(surpriseCard);
+        }
 
         if (!$(surpriseCard).hasClass('time-to-view')) return;
 
@@ -126,27 +131,22 @@
             method: "PUT",
             success: function(res) {
                 $(surpriseCard).removeClass('time-to-view');
-                var duration = 10 * 1000;
-                var animationEnd = Date.now() + duration;
-                var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+                const duration = 10 * 1000;
+                const animationEnd = Date.now() + duration;
+                const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
 
-                function randomInRange(min, max) {
-                return Math.random() * (max - min) + min;
-                }
+                const randomInRange = (min, max) => Math.random() * (max - min) + min;
 
-                var interval = setInterval(function() {
-                    var timeLeft = animationEnd - Date.now();
+                const interval = setInterval(function() {
+                    const timeLeft = animationEnd - Date.now();
 
-                    if (timeLeft <= 0) {
-                        return clearInterval(interval);
-                    }
+                    if (timeLeft <= 0) return clearInterval(interval);
 
-                    var particleCount = 50 * (timeLeft / duration);
+                    const particleCount = 50 * (timeLeft / duration);
                     // since particles fall down, start a bit higher than random
                     confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
                     confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
                 }, 250);
-                console.log(res);
                 clearInterval(window[`jiggleInterval${surpriseID}`]);
                 setTimeout(() => {
                     $(surpriseCard).find('.countdown').toggleClass('opacity-100 opacity-0');
@@ -155,8 +155,8 @@
                         setTimeout(() => {
                             $(surpriseCard).find('h1').toggleClass('opacity-100');
                             $(surpriseCard).find('p').toggleClass('opacity-100');
-                        }, 1000)
-                    }, 1000)
+                        }, 1000);
+                    }, 1000);
                 }, 1000);
             },
             error: function(res) {
