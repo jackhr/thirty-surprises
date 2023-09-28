@@ -5,7 +5,7 @@
         <div onclick="openCreateModal()" class="cursor-pointer w-full h-full bg-green-600 hover:bg-green-700 active:bg-green-800 sticky top-0 items-center justify-center flex">
             Create Surprise
         </div>
-        <div onclick="gotToSurprises()" class="cursor-pointer w-full h-full bg-sky-600 hover:bg-sky-700 active:bg-sky-800 sticky top-0 items-center justify-center flex">
+        <div onclick="goToSurprises()" class="cursor-pointer w-full h-full bg-sky-600 hover:bg-sky-700 active:bg-sky-800 sticky top-0 items-center justify-center flex">
             All Surprises
         </div>
         <div onclick="handleLogout()" class="cursor-pointer w-full h-full bg-red-600 hover:bg-red-700 active:bg-red-800 sticky top-0 items-center justify-center flex">
@@ -335,14 +335,8 @@
             $("#create-modal").removeClass('hidden');
         }
 
-        function gotToSurprises() {
-            location.href = "/";
-        }
-        
-        function handleLogout() {
-            location.href = "/logout";
-        }
-        
     </script>
+    
+    <%- include('../partials/nav-functions.ejs') %>
     
 </body>

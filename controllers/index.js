@@ -24,7 +24,8 @@ async function index(req, res) {
     res.render('index', {
         allSurprises,
         completedSurprises,
-        surprisesLeft: 30 - completedSurprises.length
+        surprisesLeft: 30 - completedSurprises.length,
+        user: req.session.user
     });
 }
 
