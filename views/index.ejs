@@ -3,7 +3,7 @@
 <body class="bg-gray-100">
     <canvas id="confetti" class="fixed w-screen h-screen top-0 pointer-events-none"></canvas>
     <main class="h-screen flex flex-col overflow-hidden">
-        <div id="intro" class="absolute w-full h-screen bg-purple-700 sticky top-0 items-center justify-center flex">
+        <div id="intro" class="hidden absolute w-full h-screen bg-purple-700 sticky top-0 items-center justify-center flex">
             <div class="text-4xl text-white flex flex-col md:flex-row items-center justify-center gap-3">
                 <div class="flex items-center">
                     <div id="names-container" class="border-b-2 border-white h-10 w-40 relative flex items-center justify-end text-right">
@@ -23,7 +23,7 @@
             </div>
         </div>
     
-        <div id="surprises" class="transition-all duration-1000 hidden opacity-0 m-auto max-w-screen-2xl w-full flex flex-wrap gap-12 p-6 justify-center items-center overflow-auto">
+        <div id="surprises" class="transition-all duration-1000 opacity-100 m-auto max-w-screen-2xl w-full flex flex-wrap gap-8 sm:gap-12 p-6 justify-center items-center overflow-auto">
             <% if (user?.name === "admin") { %>
                 <div class="text-white w-full h-12 sticky top-0 items-center justify-center flex z-10">
                     <div onclick="goToAdmin()" class="cursor-pointer w-full h-full bg-sky-600 hover:bg-sky-700 active:bg-sky-800 sticky top-0 items-center justify-center flex">
@@ -34,35 +34,37 @@
                     </div>
                 </div>
             <% } %>
-            <% for(let i = 1; i <= 30; i++) { %>
-                <% const s = allSurprises[i - 1] %>
+            <% for (let i = 1; i <= 30; i++) { %>
+                <% const s = allSurprises[i - 1]; %>
+                <% const sCardClass = "surprise-card relative w-40 h-40 sm:w-48 sm:h-48 border-2 border-gray-300 rounded-lg cursor-pointer overflow-hidden"; %>
+                <% const iconClass = "absolute w-full h-full text-6xl sm:text-8xl text-gray-500 flex items-center justify-center"; %>
                 <% if (!s || (!s.viewed && !s.revealDate)) { %>
                     <div
-                        class="surprise-card relative w-48 h-48 border-2 border-gray-300 rounded-lg cursor-pointer overflow-hidden upcoming"
+                        class="<%= sCardClass %> upcoming"
                         onclick="handleClick(this)"
                     >
-                        <div class="absolute w-full h-full text-8xl opacity-40 text-gray-500 flex items-center justify-center"><%= i %></div>
+                        <div class="<%= iconClass %> opacity-40"><%= i %></div>
                     </div>
                 <% } else { %>
                     <div
-                        class="surprise-card relative w-48 h-48 border-2 border-gray-300 rounded-lg cursor-pointer overflow-hidden <%= s.viewed ? "viewed" : (s.revealDate ? "upcoming" : "") %>"
+                        class="<%= `${sCardClass} ${s.viewed ? "viewed" : (s.revealDate ? "upcoming" : "")}` %>"
                         data-reveal-date="<%= s.revealDate %>"
                         data-id="<%= s._id %>"
                         onclick="handleClick(this)"
                     >
-                        <div class="icon-container transition-all duration-1000 absolute w-full h-full text-8xl <%= s.viewed ? "opacity-10" : "opacity-30" %> text-gray-500 flex items-center justify-center">
+                        <div class="<%= iconClass %> icon-container transition-all duration-1000 <%= s.viewed ? "opacity-10" : "opacity-30" %>">
                             <i class="<%= s.iconClass %>"></i>
                         </div>
                         <div class="surprise-body w-full h-full relative p-2 pt-10">
                             <div class="absolute p-2 left-0 top-0 w-full flex justify-between items-center">
                                 <span data-magnitude="<%= s.magnitude %>" class="magnitude rounded bg-white text-black px-2"><%= s.magnitude %></span>
                                 <span class="text-sm text-gray-500"><%= i %></span>
-                                <span data-variety="<%= s.variety %>" class="variety rounded bg-white text-black px-2 text-xs font-semibold tracking-wider"><%= s.variety %></span>
+                                <span data-variety="<%= s.variety %>" class="variety rounded bg-white text-black px-2 text-xs sm:font-semibold sm:tracking-wider"><%= s.variety %></span>
                             </div>
-                            <h1 class="transition-all duration-1000 <%= s.viewed ? "opacity-100" : "opacity-0" %> text-lg mb-2 font-extrabold"><%= s.title %></h1>
-                            <p class="transition-all duration-1000 <%= s.viewed ? "opacity-100" : "opacity-0" %>"><%= s.description %></p>
+                            <h1 class="transition-all duration-1000 text-base sm:text-lg <%= s.viewed ? "opacity-100" : "opacity-0" %> mb-1 sm:mb-2 font-extrabold"><%= s.title %></h1>
+                            <p class="transition-all duration-1000 text-xs sm:text-base <%= s.viewed ? "opacity-100" : "opacity-0" %>"><%= s.description %></p>
                             <% if (!s.viewed && s.revealDate) { %>
-                                <div class="countdown-container absolute w-full h-40 text-gray-500 text-xl text-center bottom-0 left-0">
+                                <div class="countdown-container absolute w-full h-40 text-gray-500 text-lg sm:text-xl text-center bottom-0 left-0">
                                     <div class="transition-all duration-1000 opacity-100 countdown absolute w-full bottom-0"></div>
                                     <div class="transition-all duration-1000 opacity-0 reveal-date absolute w-full bottom-0 text-base"><%= Intl.DateTimeFormat('en-US', {timeZone: 'America/New_York', hour12: true, hour: 'numeric', minute: 'numeric', year: "2-digit", month: "2-digit", day: "2-digit"}).format(s.revealDate) %></div>
                                 </div>
@@ -81,8 +83,8 @@
     const STATE = {
         magnitudeClassLookup: {
             small: "text-xs text-emerald-400",
-            medium: "text-sm text-emerald-500 font-medium",
-            large: "text-md text-emerald-600 font-bold",
+            medium: "text-xs sm:text-sm text-emerald-500 font-medium",
+            large: "text-xs sm:text-md text-emerald-600 font-bold",
         },
         varietyClassLookup: {
             cute: "text-sky-500",
