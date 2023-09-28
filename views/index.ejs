@@ -54,7 +54,7 @@
                             <% if (!s.viewed && s.revealDate) { %>
                                 <div class="countdown-container absolute w-full h-40 text-gray-500 text-xl text-center bottom-0 left-0">
                                     <div class="transition-all duration-1000 opacity-100 countdown absolute w-full bottom-0"></div>
-                                    <div class="transition-all duration-1000 opacity-0 reveal-date absolute w-full bottom-0 text-base"><%= s.revealDate.toLocaleString().replace(/\b(\d{1,2}:\d{1,2}):\d{1,2}\b/g, '$1') %></div>
+                                    <div class="transition-all duration-1000 opacity-0 reveal-date absolute w-full bottom-0 text-base"><%= Intl.DateTimeFormat('en-US', {timeZone: 'America/New_York', hour12: true, hour: 'numeric', minute: 'numeric', year: "2-digit", month: "2-digit", day: "2-digit"}).format(s.revealDate) %></div>
                                 </div>
                             <% } %>
                         </div>
