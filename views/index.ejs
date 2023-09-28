@@ -40,7 +40,7 @@
                         data-id="<%= s._id %>"
                         onclick="handleClick(this)"
                     >
-                        <div class="icon-container transition-all duration-1000 absolute w-full h-full text-8xl <%= s.completedAt ? "opacity-10" : "opacity-30" %> text-gray-500 flex items-center justify-center">
+                        <div class="icon-container transition-all duration-1000 absolute w-full h-full text-8xl <%= s.viewed ? "opacity-10" : "opacity-30" %> text-gray-500 flex items-center justify-center">
                             <i class="<%= s.iconClass %>"></i>
                         </div>
                         <div class="surprise-body w-full h-full relative p-2 pt-10">
