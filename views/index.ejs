@@ -1,7 +1,5 @@
 <%- include('partials/head') %>
 
-<% console.log("user:", user) %>
-
 <body class="bg-gray-100">
     <canvas id="confetti" class="fixed w-screen h-screen top-0 pointer-events-none"></canvas>
     <main class="h-screen flex flex-col overflow-hidden">
@@ -175,11 +173,8 @@
                         }, 1000);
                     }, 1000);
                 }, 1000);
-            },
-            error: function(res) {
-                console.log(res);
-            },
-        })
+            }
+        });
     }
 
     function handleJiggle(surpriseCard) {

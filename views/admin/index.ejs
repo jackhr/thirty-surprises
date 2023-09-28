@@ -164,7 +164,6 @@
                 success: function(deletedSurprise, status) {
                     if (status === "success") {
                         $('.deleting').remove();
-                        console.log(deletedSurprise);
                         closeDeleteModal();
                     } else {
                         swal({
@@ -173,9 +172,6 @@
                             text: "Something went wrong"
                         });
                     }
-                },
-                error: function() {
-                    console.log(arguments);
                 }
             });
         }
@@ -228,9 +224,6 @@
                     updateTimeInput(surprise._id, surprise.revealDate, "#reveal-date");
                     
                     swal({ title, icon, text });
-                },
-                error: function() {
-                    console.log(arguments);
                 }
             });
         }
@@ -250,7 +243,6 @@
                 method: "POST",
                 data,
                 success: newSurprise => {
-                    console.log(newSurprise);
                     if (newSurprise.error) {
                         swal({
                             icon: "error",
@@ -315,9 +307,6 @@
                         
                         updateTimeInput(newSurprise._id, newSurprise.revealDate, "#reveal-date");
                     }
-                },
-                error: function() {
-                    console.log(arguments);
                 }
             });
         }
