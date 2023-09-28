@@ -14,7 +14,8 @@ async function admin(req, res) {
     const surprises = await Surprise.find({});
     res.render('admin/index', {
         surprises,
-        admin: req.session.user
+        admin: req.session.user,
+        surprisesLeft: undefined
     });
 }
 

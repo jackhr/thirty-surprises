@@ -6,7 +6,11 @@ const ensureLoggedIn = require('../config/ensureLoggedIn');
 
 router.get('/', IndexCtrl.index);
 
-router.get('/login', (req, res) => res.render('login'));
+router.get('/login', (req, res) => {
+    res.render('login', {
+        surprisesLeft: undefined
+    })
+});
 
 router.get('/admin', ensureLoggedIn, IndexCtrl.admin);
 
