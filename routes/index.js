@@ -8,7 +8,7 @@ router.get('/', IndexCtrl.index);
 
 router.get('/login', (req, res) => res.render('login'));
 
-router.get('/admin', IndexCtrl.admin);
+router.get('/admin', ensureLoggedIn, IndexCtrl.admin);
 
 router.get('/logout', IndexCtrl.logout);
 
