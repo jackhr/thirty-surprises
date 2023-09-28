@@ -4,16 +4,17 @@
     <canvas id="confetti" class="fixed w-screen h-screen top-0 pointer-events-none"></canvas>
     <main class="h-screen overflow-hidden">
         <div id="intro" class="absolute w-full h-screen bg-purple-700 sticky top-0 items-center justify-center flex">
-            <div class="text-4xl text-white flex items-center gap-3">
-                <div id="names-container" class="w-40 relative flex items-center justify-end text-right">
-                    <span class="name absolute w-40 opacity-0 duration-500 transition-all opacity-100">Ashley</span>
-                    <span class="name absolute w-40 opacity-0 duration-500 transition-all">Baby</span>
-                    <span class="name absolute w-40 opacity-0 duration-500 transition-all">Sexy</span>
-                    <span class="name absolute w-40 opacity-0 duration-500 transition-all">My Love</span>
-                    <span class="name absolute w-40 opacity-0 duration-500 transition-all">Darling</span>
+            <div class="text-4xl text-white flex flex-col md:flex-row items-center justify-center gap-3">
+                <div class="flex items-center">
+                    <div id="names-container" class="border-b-2 border-white h-10 w-40 relative flex items-center justify-end text-right">
+                        <span class="name absolute h-10 w-40 opacity-0 duration-500 transition-all opacity-100">Ashley</span>
+                        <span class="name absolute h-10 w-40 opacity-0 duration-500 transition-all">Baby</span>
+                        <span class="name absolute h-10 w-40 opacity-0 duration-500 transition-all">Sexy</span>
+                        <span class="name absolute h-10 w-40 opacity-0 duration-500 transition-all">My Love</span>
+                        <span class="name absolute h-10 w-40 opacity-0 duration-500 transition-all">Darling</span>
+                    </div>
+                    <span>, you have </span> 
                 </div>
-                <span style="margin-left: -0.75rem;">, </span>
-                <span>you have </span> 
                 <span class="text-pink-300 text-5xl"><%= surprisesLeft %></span> 
                 <span>surprise<%= surprisesLeft == 1 ? '' : 's' %> left<%= !surprisesLeft ? '...' : ' to go!' %></span>
             </div>
