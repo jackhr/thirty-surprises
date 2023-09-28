@@ -5,18 +5,13 @@ const jwt = require('jsonwebtoken');
 
 module.exports = {
     index,
-    login,
     logout,
-    admin
+    login,
+    showLogin,
 };
 
-async function admin(req, res) {
-    const surprises = await Surprise.find({});
-    res.render('admin/index', {
-        surprises,
-        admin: req.session.user,
-        surprisesLeft: undefined
-    });
+function showLogin(req, res) {
+    res.render('login', { surprisesLeft: undefined });
 }
 
 async function index(req, res) {

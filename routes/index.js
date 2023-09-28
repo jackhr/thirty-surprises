@@ -1,18 +1,11 @@
 var express = require('express');
 var router = express.Router();
 const IndexCtrl = require('../controllers/index');
-const ensureLoggedIn = require('../config/ensureLoggedIn');
 
 
 router.get('/', IndexCtrl.index);
 
-router.get('/login', (req, res) => {
-    res.render('login', {
-        surprisesLeft: undefined
-    })
-});
-
-router.get('/admin', ensureLoggedIn, IndexCtrl.admin);
+router.get('/login', IndexCtrl.showLogin);
 
 router.get('/logout', IndexCtrl.logout);
 

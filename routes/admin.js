@@ -1,14 +1,17 @@
 var express = require('express');
 var router = express.Router();
 const AdminCtrl = require('../controllers/admin');
+const SurprisesCtrl = require('../controllers/surprises');
 const ensureLoggedIn = require('../config/ensureLoggedIn');
 
 
-router.post('/surprise', ensureLoggedIn, AdminCtrl.create);
+router.get('/', ensureLoggedIn, AdminCtrl.index);
 
-router.put('/surprise/:id', ensureLoggedIn, AdminCtrl.update);
+router.post('/surprise', ensureLoggedIn, SurprisesCtrl.create);
 
-router.delete('/surprise/:id', ensureLoggedIn, AdminCtrl.delete);
+router.put('/surprise/:id', ensureLoggedIn, SurprisesCtrl.update);
+
+router.delete('/surprise/:id', ensureLoggedIn, SurprisesCtrl.delete);
 
 
 module.exports = router;
