@@ -5,6 +5,8 @@ const SurprisesCtrl = require('../controllers/surprises');
 const ensureLoggedIn = require('../config/ensureLoggedIn');
 
 
+router.get('/surprise/:id/notify', surprisesCtrl.notify)
+
 router.get('/', ensureLoggedIn, AdminCtrl.index);
 
 router.post('/surprise', ensureLoggedIn, SurprisesCtrl.create);
