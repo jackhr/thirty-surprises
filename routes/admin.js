@@ -5,7 +5,7 @@ const SurprisesCtrl = require('../controllers/surprises');
 const ensureLoggedIn = require('../config/ensureLoggedIn');
 
 
-router.get('/surprise/:id/notify', surprisesCtrl.notify)
+router.get('/surprise/:id/notify', SurprisesCtrl.notify)
 
 router.get('/', ensureLoggedIn, AdminCtrl.index);
 
