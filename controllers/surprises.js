@@ -75,6 +75,7 @@ async function update(req, res) {
         surprise.iconClass = req.body.iconClass;
         surprise.revealDate = req.body.revealDate;
         surprise.viewed = req.body.viewed === 'true';
+        surprise.live = req.body.live === 'true';
 
         if (req.body.completed === 'true') {
             if (!surprise.completedAt) surprise.completedAt = new Date();

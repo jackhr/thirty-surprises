@@ -22,6 +22,7 @@ const surpriseSchema = new Schema({
         type: String
     },
     viewed: Boolean,
+    live: Boolean,
     completedAt: Date,
     revealDate: Date,
 },

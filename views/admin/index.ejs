@@ -19,7 +19,8 @@
                 <div class="rounded-full absolute text-4xl right-2 top-2 bg-white flex items-center justify-center cursor-pointer w-8 h-8" onclick="openDeletemodal('<%= s._id %>')">&times;</div>
                 <div class="absolute left-2 top-2 flex items-center justify-center gap-x-2">
                     <div id="status-<%= s._id %>" onclick="changeCompletedStatus('<%= s._id %>')" class="cursor-pointer flex items-center justify-center px-2 rounded border-2 <%= s.completedAt ? "completed bg-blue-400 text-white border-transparent" : "border-black" %>"><%= s.completedAt ? "completed" : "incomplete" %></div>
-                    <div id="viewed-<%= s._id %>" onclick="changeviewedStatus('<%= s._id %>')" class="cursor-pointer flex items-center justify-center px-2 rounded border-2 <%= s.viewed ? "viewed bg-blue-400 text-white border-transparent" : "border-black" %>"><%= s.viewed ? "viewed" : "not viewed yet" %></div>
+                    <div id="viewed-<%= s._id %>" onclick="changeViewedStatus('<%= s._id %>')" class="cursor-pointer flex items-center justify-center px-2 rounded border-2 <%= s.viewed ? "viewed bg-blue-400 text-white border-transparent" : "border-black" %>"><%= s.viewed ? "viewed" : "not viewed yet" %></div>
+                    <div id="live-<%= s._id %>" onclick="changeLiveStatus('<%= s._id %>')" class="cursor-pointer flex items-center justify-center px-2 rounded border-2 <%= s.live ? "live bg-blue-400 text-white border-transparent" : "border-black" %>"><%= s.live ? "live" : "testing" %></div>
                 </div>
                 <div class="flex flex-col gap-1 mt-4">
                     <label class="text-xs" for="title-<%= s._id %>">Title</label>
@@ -141,7 +142,15 @@
             });
         })
 
-        function changeviewedStatus(surpriseID) {
+        function changeLiveStatus(surpriseID) {
+            const liveEl = $(`#live-${surpriseID}`);
+            const isLive = liveEl.hasClass('live');
+            liveEl
+                .toggleClass('live bg-blue-400 text-white border-transparent border-black')
+                .text(isLive ? "testing" : "live");
+        }
+
+        function changeViewedStatus(surpriseID) {
             const viewedEl = $(`#viewed-${surpriseID}`);
             const isViewed = viewedEl.hasClass('viewed');
             viewedEl
@@ -211,6 +220,7 @@
                 iconClass: $(`#icon-class-${surpriseID}`).val(),
                 completed: $(`#status-${surpriseID}`).hasClass('completed'),
                 viewed: $(`#viewed-${surpriseID}`).hasClass('viewed'),
+                live: $(`#live-${surpriseID}`).hasClass('live'),
                 revealDate,
             };
             $.ajax({
@@ -262,7 +272,7 @@
                             <div class="absolute text-4xl right-2 top-2 bg-white flex items-center justify-center cursor-pointer w-8 h-8" onclick="openDeletemodal('${newSurprise._id}')">&times;</div>
                             <div class="absolute left-2 top-2 flex items-center justify-center gap-x-2">
                                 <div id="status-${newSurprise._id}" onclick="changeCompletedStatus('${newSurprise._id}')" class="cursor-pointer flex items-center justify-center px-2 rounded border-2 ${newSurprise.completedAt ? "completed bg-blue-400 text-white border-transparent" : "border-black"}">${newSurprise.completedAt ? "completed" : "incomplete"}</div>
-                                <div id="viewed-${newSurprise._id}" onclick="changeviewedStatus('${newSurprise._id}')" class="cursor-pointer flex items-center justify-center px-2 rounded border-2 ${newSurprise.viewed ? "viewed bg-blue-400 text-white border-transparent" : "border-black"}">${newSurprise.viewed ? "viewed" : "not viewed yet"}</div>
+                                <div id="viewed-${newSurprise._id}" onclick="changeViewedStatus('${newSurprise._id}')" class="cursor-pointer flex items-center justify-center px-2 rounded border-2 ${newSurprise.viewed ? "viewed bg-blue-400 text-white border-transparent" : "border-black"}">${newSurprise.viewed ? "viewed" : "not viewed yet"}</div>
                             </div>
                             <div class="flex flex-col gap-1 mt-4">
                                 <label class="text-xs" for="title-${newSurprise._id}">Title</label>

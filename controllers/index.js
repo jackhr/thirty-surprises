@@ -15,7 +15,7 @@ function showLogin(req, res) {
 }
 
 async function index(req, res) {
-    const allSurprises = await Surprise.find({});
+    const allSurprises = await Surprise.find({ live: true });
     const completedSurprises = allSurprises.filter(s => s.viewed);
     res.render('index', {
         allSurprises,
