@@ -773,16 +773,8 @@ select {
   margin-top: 1rem;
 }
 
-.block {
-  display: block;
-}
-
 .flex {
   display: flex;
-}
-
-.table {
-  display: table;
 }
 
 .hidden {

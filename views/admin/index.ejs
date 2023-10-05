@@ -18,9 +18,9 @@
             <div class="bg-gray-200 relative flex h-fit w-96 flex flex-col bg-white rounded justify-center p-8 text-black gap-y-4 s-card <%= s.completedAt ? "border-green-500" : ""%> border-2" id="surprise-<%= s._id %>" data-id="<%= s._id %>">
                 <div class="rounded-full absolute text-4xl right-2 top-2 bg-white flex items-center justify-center cursor-pointer w-8 h-8" onclick="openDeletemodal('<%= s._id %>')">&times;</div>
                 <div class="absolute left-2 top-2 flex items-center justify-center gap-x-2">
-                    <div id="status-<%= s._id %>" onclick="changeCompletedStatus('<%= s._id %>')" class="cursor-pointer flex items-center justify-center px-2 rounded border-2 <%= s.completedAt ? "completed bg-blue-400 text-white border-transparent" : "border-black" %>"><%= s.completedAt ? "completed" : "incomplete" %></div>
-                    <div id="viewed-<%= s._id %>" onclick="changeViewedStatus('<%= s._id %>')" class="cursor-pointer flex items-center justify-center px-2 rounded border-2 <%= s.viewed ? "viewed bg-blue-400 text-white border-transparent" : "border-black" %>"><%= s.viewed ? "viewed" : "not viewed yet" %></div>
-                    <div id="live-<%= s._id %>" onclick="changeLiveStatus('<%= s._id %>')" class="cursor-pointer flex items-center justify-center px-2 rounded border-2 <%= s.live ? "live bg-blue-400 text-white border-transparent" : "border-black" %>"><%= s.live ? "live" : "testing" %></div>
+                    <div id="completed-<%= s._id %>" onclick="handleStatusChange('<%= s._id %>', 'completed')" class="cursor-pointer flex items-center justify-center px-2 rounded border-2 <%= s.completedAt ? "completed bg-blue-400 text-white border-transparent" : "border-black" %>"><%= s.completedAt ? "completed" : "incomplete" %></div>
+                    <div id="viewed-<%= s._id %>" onclick="handleStatusChange('<%= s._id %>', 'viewed')" class="cursor-pointer flex items-center justify-center px-2 rounded border-2 <%= s.viewed ? "viewed bg-blue-400 text-white border-transparent" : "border-black" %>"><%= s.viewed ? "viewed" : "not viewed yet" %></div>
+                    <div id="live-<%= s._id %>" onclick="handleStatusChange('<%= s._id %>', 'live')" class="cursor-pointer flex items-center justify-center px-2 rounded border-2 <%= s.live ? "live bg-blue-400 text-white border-transparent" : "border-black" %>"><%= s.live ? "live" : "testing" %></div>
                 </div>
                 <div class="flex flex-col gap-1 mt-4">
                     <label class="text-xs" for="title-<%= s._id %>">Title</label>
@@ -142,28 +142,33 @@
             });
         })
 
-        function changeLiveStatus(surpriseID) {
-            const liveEl = $(`#live-${surpriseID}`);
-            const isLive = liveEl.hasClass('live');
-            liveEl
-                .toggleClass('live bg-blue-400 text-white border-transparent border-black')
-                .text(isLive ? "testing" : "live");
+        function handleStatusChange(surpriseID, selector) {
+            let truthyStatus, falsyStatus;
+            const elem = $(`#${selector}-${surpriseID}`);
+            switch (selector) {
+                case "live":
+                    truthyStatus = "live";
+                    falsyStatus = "testing";
+                    break;
+
+                case "viewed":
+                    truthyStatus = "viewed";
+                    falsyStatus = "not yet viewed";
+                    break;
+            
+                default:
+                    truthyStatus = "completed";
+                    falsyStatus = "incomplete";
+                    break;
+            }
+            changeStatus(elem, selector, falsyStatus, truthyStatus);
         }
 
-        function changeViewedStatus(surpriseID) {
-            const viewedEl = $(`#viewed-${surpriseID}`);
-            const isViewed = viewedEl.hasClass('viewed');
-            viewedEl
-                .toggleClass('viewed bg-blue-400 text-white border-transparent border-black')
-                .text(isViewed ? "not yet viewed" : "viewed");
-        }
-
-        function changeCompletedStatus(surpriseID) {
-            const statusEl = $(`#status-${surpriseID}`);
-            const isCompleted = statusEl.hasClass('completed');
-            statusEl
-                .toggleClass('completed bg-blue-400 text-white border-transparent border-black')
-                .text(isCompleted ? "incomplete" : "completed");
+        function changeStatus(elem, selector, falsyStatus, truthyStatus) {
+            const statusIsTrue = elem.hasClass(selector);
+            elem
+                .toggleClass(`${selector} bg-blue-400 text-white border-transparent border-black`)
+                .text(statusIsTrue ? falsyStatus : truthyStatus);
         }
 
         function handleDelete() {
@@ -218,7 +223,7 @@
                 magnitude: $(`#magnitude-${surpriseID}`).val(),
                 variety: $(`#variety-${surpriseID}`).val(),
                 iconClass: $(`#icon-class-${surpriseID}`).val(),
-                completed: $(`#status-${surpriseID}`).hasClass('completed'),
+                completed: $(`#completed-${surpriseID}`).hasClass('completed'),
                 viewed: $(`#viewed-${surpriseID}`).hasClass('viewed'),
                 live: $(`#live-${surpriseID}`).hasClass('live'),
                 revealDate,
@@ -228,6 +233,7 @@
                 method: "PUT",
                 data,
                 success: surprise => {
+                    console.log(surprise);
                     const icon = surprise.error ? "error" : "success";
                     const title = surprise.error ? "Error" : "Success";
                     const text = surprise.error ? surprise.error : `${surprise.title} successfully updated!`;
@@ -271,8 +277,9 @@
                         <div class="relative flex h-fit w-96 flex flex-col bg-white rounded justify-center p-8 text-black gap-y-4 s-card" id="surprise-${newSurprise._id}" data-id="${newSurprise._id}">
                             <div class="absolute text-4xl right-2 top-2 bg-white flex items-center justify-center cursor-pointer w-8 h-8" onclick="openDeletemodal('${newSurprise._id}')">&times;</div>
                             <div class="absolute left-2 top-2 flex items-center justify-center gap-x-2">
-                                <div id="status-${newSurprise._id}" onclick="changeCompletedStatus('${newSurprise._id}')" class="cursor-pointer flex items-center justify-center px-2 rounded border-2 ${newSurprise.completedAt ? "completed bg-blue-400 text-white border-transparent" : "border-black"}">${newSurprise.completedAt ? "completed" : "incomplete"}</div>
-                                <div id="viewed-${newSurprise._id}" onclick="changeViewedStatus('${newSurprise._id}')" class="cursor-pointer flex items-center justify-center px-2 rounded border-2 ${newSurprise.viewed ? "viewed bg-blue-400 text-white border-transparent" : "border-black"}">${newSurprise.viewed ? "viewed" : "not viewed yet"}</div>
+                                <div id="status-${newSurprise._id}" onclick="handleChangeStatus('${newSurprise._id}', 'completed')" class="cursor-pointer flex items-center justify-center px-2 rounded border-2 ${newSurprise.completedAt ? "completed bg-blue-400 text-white border-transparent" : "border-black"}">${newSurprise.completedAt ? "completed" : "incomplete"}</div>
+                                <div id="viewed-${newSurprise._id}" onclick="handleChangeStatus('${newSurprise._id}', 'viewed')" class="cursor-pointer flex items-center justify-center px-2 rounded border-2 ${newSurprise.viewed ? "viewed bg-blue-400 text-white border-transparent" : "border-black"}">${newSurprise.viewed ? "viewed" : "not viewed yet"}</div>
+                                <div id="live-${newSurprise._id}" onclick="handleChangeStatus('${newSurprise._id}', 'live')" class="cursor-pointer flex items-center justify-center px-2 rounded border-2 ${newSurprise.live ? "live bg-blue-400 text-white border-transparent" : "border-black"}">${newSurprise.live ? "live" : "testing"}</div>
                             </div>
                             <div class="flex flex-col gap-1 mt-4">
                                 <label class="text-xs" for="title-${newSurprise._id}">Title</label>
