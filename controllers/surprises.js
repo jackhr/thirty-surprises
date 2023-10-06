@@ -13,8 +13,10 @@ module.exports = {
 
 async function all(req, res) {
     try {
-        const surprises = await Surprise.find({}).sort({ revealDate: 1 });
-        res.json(surprises);
+        const surprisesWithRevealDate = await Surprise.find({ revealDate: { $ne: null } }).sort({ revealDate: 1 })
+        const surprisesWithoutRevealDate = await Surprise.find({ revealDate: null })
+        const allSurprises = [...surprisesWithRevealDate, ...surprisesWithoutRevealDate];
+        res.json(allSurprises);
     } catch(error) {
         res.json({ error: error.message });
     }

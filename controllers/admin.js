@@ -5,7 +5,9 @@ module.exports = {
 }
 
 async function index(req, res) {
-    const surprises = await Surprise.find({}).sort({ revealDate: 1 });
+    const surprisesWithRevealDate = await Surprise.find({ revealDate: { $ne: null } }).sort({ revealDate: 1 })
+    const surprisesWithoutRevealDate = await Surprise.find({ revealDate: null })
+    const surprises = [...surprisesWithRevealDate, ...surprisesWithoutRevealDate];
     res.render('admin/index', {
         surprises,
         admin: req.session.user,
