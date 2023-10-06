@@ -13,9 +13,10 @@
         </div>
     </div>
     <div id="surprises-container" class="dark:bg-opacity-95 bg-opacity-95 flex justify-center flex-wrap gap-12 lg:gap-20 lg:overflow-hidden p-6">
-        <% surprises.forEach(s => { %>
+        <% surprises.forEach((s, idx) => { %>
             <div class="bg-gray-200 relative flex h-fit w-96 flex flex-col bg-white rounded justify-center p-8 text-black gap-y-4 s-card <%= s.completedAt ? "border-green-500" : ""%> border-2" id="surprise-<%= s._id %>" data-id="<%= s._id %>">
-                <div class="rounded-full absolute text-4xl right-2 top-2 bg-white flex items-center justify-center cursor-pointer w-8 h-8" onclick="openDeletemodal('<%= s._id %>')">&times;</div>
+                <div class="absolute top-2 left-2 rounded-full bg-gray-200 text-black text-sm w-6 h-6 flex items-center justify-center"><%= idx + 1 %></div>
+                <div class="rounded-full absolute text-4xl right-2 top-2 flex items-center justify-center cursor-pointer w-8 h-8" onclick="openDeletemodal('<%= s._id %>')">&times;</div>
                 <h1 class="text-2xl"><%= s.title %></h1>
                 <div class="flex flex-wrap items-center gap-2 py-2 border-y border-gray-300">
                     <div id="completed-<%= s._id %>" onclick="handleStatusChange('<%= s._id %>', 'completed')" class="cursor-pointer flex items-center justify-center px-2 rounded border-2 <%= s.completedAt ? "completed bg-blue-400 text-white border-transparent" : "border-black" %>"><%= s.completedAt ? "completed" : "incomplete" %></div>
