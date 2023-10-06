@@ -13,13 +13,16 @@ module.exports = {
 
 async function all(req, res) {
     try {
-        const surprisesWithRevealDate = await Surprise.find({ revealDate: { $ne: null } }).sort({ revealDate: 1 })
-        const surprisesWithoutRevealDate = await Surprise.find({ revealDate: null })
-        const allSurprises = [...surprisesWithRevealDate, ...surprisesWithoutRevealDate];
-        res.json(allSurprises);
+        res.json(await getAllSurprises());
     } catch(error) {
         res.json({ error: error.message });
     }
+}
+
+async function getAllSurprises() {
+    const surprisesWithRevealDate = await Surprise.find({ revealDate: { $ne: null } }).sort({ revealDate: 1 })
+    const surprisesWithoutRevealDate = await Surprise.find({ revealDate: null });
+    return [...surprisesWithRevealDate, ...surprisesWithoutRevealDate];
 }
 
 async function notify(req, res) {
@@ -100,12 +103,12 @@ async function create(req, res) {
         const newSurprise = new Surprise(req.body);
         newSurprise.revealDate = DateTime.fromISO(req.body.revealDate, { zone: 'America/New_York' }).toJSON();
         await newSurprise.save();
-        const surprises = await Surprise.find({}).sort({ revealDate: 1 });
-        sendEmail(
+        const surprises = await getAllSurprises();
+        const emailRes = await sendEmail(
             "New Surprise!",
             "There's a new surprise waiting for you!"
         );
-        res.json({ surprises, newSurprise });
+        res.json({ surprises, newSurprise, emailRes });
     } catch(error) {
         res.json({ error: error.message });
     }
@@ -115,32 +118,39 @@ async function create(req, res) {
 /******* MAIL FUNCTIONS *******/
 
 
-function sendEmail(subject, text) {
-    const transporter = nodemailer.createTransport({
-        service: "gmail",
-        auth: {
-            type: 'OAuth2',
-            user: process.env.MAIL_USERNAME,
-            pass: process.env.MAIL_PASSWORD,
-            clientId: process.env.OAUTH_CLIENT_ID,
-            clientSecret: process.env.OAUTH_CLIENT_SECRET,
-            refreshToken: process.env.OAUTH_REFRESH_TOKEN,
-        }
-    });
-
-    const mailOptions = {
-        from: process.env.MAIL_USERNAME,
-        to: process.env.TO_EMAIL,
-        subject,
-        text: `${text}\n\nhttps://thirty-surprises-a96594f80b00.herokuapp.com`
-    };
+async function sendEmail(subject, text) {
+    try {
+        const transporter = nodemailer.createTransport({
+            service: "gmail",
+            auth: {
+                type: 'OAuth2',
+                user: process.env.MAIL_USERNAME,
+                pass: process.env.MAIL_PASSWORD,
+                clientId: process.env.OAUTH_CLIENT_ID,
+                clientSecret: process.env.OAUTH_CLIENT_SECRET,
+                refreshToken: process.env.OAUTH_REFRESH_TOKEN,
+            }
+        });
     
-    // Send email
-    transporter.sendMail(mailOptions, function(error, info){
-        if (error) {
-            console.error(error);
-        } else {
-            console.log('Email sent: ' + info.response);
-        }
-    });
+        const mailOptions = {
+            from: process.env.MAIL_USERNAME,
+            to: process.env.TO_EMAIL,
+            subject,
+            text: `${text}\n\nhttps://thirty-surprises-a96594f80b00.herokuapp.com`
+        };
+        
+        // Send email
+
+        return await transporter.sendMail(mailOptions);
+        
+        // return transporter.sendMail(mailOptions, function(error, info){
+        //     if (error) {
+        //         console.error(error);
+        //     } else {
+        //         console.log('Email sent: ' + info.response);
+        //     }
+        // });
+    } catch(err) {
+        return { error: err.message };
+    }
 }

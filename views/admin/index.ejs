@@ -226,27 +226,42 @@
                 method: "POST",
                 data,
                 success: res => {
+                    console.log(res);
+                    const alerts = [];
                     if (res.error) {
-                        swal({
+                        alerts.push({
                             icon: "error",
                             title: "Error",
                             text: res.error,
                         });
                     } else {
                         if (!res.newSurprise.revealDate) {
-                            swal({
+                            alerts.push({
                                 icon: "warning",
                                 title: "Invalid Date",
                                 text: "You didn't completely fill out the revealDate fyi, so it wasn't saved"
                             });
                         };
+                        if (res.emailRes.error) {
+                            alerts.push({
+                                icon: "error",
+                                title: "Error Sending Email",
+                                text: res.emailRes.error,
+                            });
+                        }
                         $("#surprises-container").html("");
                         res.surprises.forEach((s, idx) => appendNewSurprise(s, idx + 1));
                         closeCreateModal();
                         resetCreateModal();
+
+                        if (alerts.length) handleMultipleSwals(alerts);
                     }
                 }
             });
+        }
+
+        function handleMultipleSwals(alerts) {
+            swal(alerts[0]).then(() => alerts.shift() && alerts.length && handleMultipleSwals(alerts));
         }
 
         function reloadSurprises() {
