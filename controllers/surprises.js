@@ -7,13 +7,22 @@ module.exports = {
     create,
     update,
     notify,
+    all,
     delete: deleteOne
 };
 
+async function all(req, res) {
+    try {
+        const surprises = await Surprise.find({}).sort({ revealDate: 1 });
+        res.json(surprises);
+    } catch(error) {
+        res.json({ error: error.message });
+    }
+}
 
 async function notify(req, res) {
     try {
-        const surprises = await Surprise.find({});
+        const surprises = await Surprise.find({}).sort({ revealDate: 1 });
         const surpriseIdx = surprises.findIndex(s => s._id == req.params.id);
         let success = true, message = "Success";
     
@@ -31,9 +40,7 @@ async function notify(req, res) {
             message
         });
     } catch(error) {
-        res.json({
-            error: error.message
-        });
+        res.json({ error: error.message });
     }
 }
 
@@ -46,9 +53,7 @@ async function viewed(req, res) {
         await surprise.save();
         res.json(surprise);
     } catch(error) {
-        res.json({
-            error: error.message
-        });
+        res.json({ error: error.message });
     }
 
 }
@@ -58,9 +63,7 @@ async function deleteOne(req, res) {
         const surprise = await Surprise.findByIdAndDelete(req.params.id);
         res.json(surprise);
     } catch(error) {
-        res.json({
-            error: error.message
-        });
+        res.json({ error: error.message });
     }
 }
 
@@ -86,26 +89,23 @@ async function update(req, res) {
         await surprise.save();
         res.json(surprise);
     } catch(error) {
-        res.json({
-            error: error.message
-        });
+        res.json({ error: error.message });
     }
 }
 
 async function create(req, res) {
     try {
-        const surprise = new Surprise(req.body);
-        surprise.revealDate = DateTime.fromISO(req.body.revealDate, { zone: 'America/New_York' }).toJSON();
-        await surprise.save();
+        const newSurprise = new Surprise(req.body);
+        newSurprise.revealDate = DateTime.fromISO(req.body.revealDate, { zone: 'America/New_York' }).toJSON();
+        await newSurprise.save();
+        const surprises = await Surprise.find({}).sort({ revealDate: 1 });
         sendEmail(
             "New Surprise!",
             "There's a new surprise waiting for you!"
         );
-        res.json(surprise);
+        res.json({ surprises, newSurprise });
     } catch(error) {
-        res.json({
-            error: error.message
-        });
+        res.json({ error: error.message });
     }
 }
 

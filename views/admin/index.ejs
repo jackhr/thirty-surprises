@@ -14,7 +14,7 @@
     </div>
     <div id="surprises-container" class="dark:bg-opacity-95 bg-opacity-95 flex justify-center flex-wrap gap-12 lg:gap-20 lg:overflow-hidden p-6">
         <% surprises.forEach((s, idx) => { %>
-            <div class="bg-gray-200 relative flex h-fit w-96 flex flex-col bg-white rounded justify-center p-8 text-black gap-y-4 s-card <%= s.completedAt ? "border-green-500" : ""%> border-2" id="surprise-<%= s._id %>" data-id="<%= s._id %>">
+            <div class="bg-gray-200 relative flex h-fit w-96 flex flex-col bg-white rounded justify-center p-8 text-black gap-y-4 s-card border-2 <%= s.completedAt ? "border-green-500" : "" %>" id="surprise-<%= s._id %>" data-id="<%= s._id %>">
                 <div class="absolute top-2 left-2 rounded-full bg-gray-200 text-black text-sm w-6 h-6 flex items-center justify-center"><%= idx + 1 %></div>
                 <div class="rounded-full absolute text-4xl right-2 top-2 flex items-center justify-center cursor-pointer w-8 h-8" onclick="openDeletemodal('<%= s._id %>')">&times;</div>
                 <h1 class="text-2xl"><%= s.title %></h1>
@@ -243,7 +243,7 @@
                     const icon = surprise.error ? "error" : "success";
                     const title = surprise.error ? "Error" : "Success";
                     const text = surprise.error ? surprise.error : `${surprise.title} successfully updated!`;
-                    updateTimeInput(surprise._id, surprise.revealDate, "#reveal-date");
+                    reloadSurprises();
                     
                     swal({ title, icon, text });
                 }
@@ -264,74 +264,93 @@
                 url: "/admin/surprise",
                 method: "POST",
                 data,
-                success: newSurprise => {
-                    if (newSurprise.error) {
+                success: res => {
+                    if (res.error) {
                         swal({
                             icon: "error",
                             title: "Error",
-                            text: newSurprise.error,
+                            text: res.error,
                         });
                     } else {
-                        if (!data.revealDate) {
+                        if (!res.newSurprise.revealDate) {
                             swal({
                                 icon: "warning",
                                 title: "Invalid Date",
                                 text: "You didn't completely fill out the revealDate fyi, so it wasn't saved"
                             });
                         };
-                        $("#surprises-container").append(`
-                        <div class="relative flex h-fit w-96 flex flex-col bg-white rounded justify-center p-8 text-black gap-y-4 s-card" id="surprise-${newSurprise._id}" data-id="${newSurprise._id}">
-                            <div class="absolute text-4xl right-2 top-2 bg-white flex items-center justify-center cursor-pointer w-8 h-8" onclick="openDeletemodal('${newSurprise._id}')">&times;</div>
-                            <div class="absolute left-2 top-2 flex items-center justify-center gap-x-2">
-                                <div id="status-${newSurprise._id}" onclick="handleChangeStatus('${newSurprise._id}', 'completed')" class="cursor-pointer flex items-center justify-center px-2 rounded border-2 ${newSurprise.completedAt ? "completed bg-blue-400 text-white border-transparent" : "border-black"}">${newSurprise.completedAt ? "completed" : "incomplete"}</div>
-                                <div id="viewed-${newSurprise._id}" onclick="handleChangeStatus('${newSurprise._id}', 'viewed')" class="cursor-pointer flex items-center justify-center px-2 rounded border-2 ${newSurprise.viewed ? "viewed bg-blue-400 text-white border-transparent" : "border-black"}">${newSurprise.viewed ? "viewed" : "not viewed yet"}</div>
-                                <div id="live-${newSurprise._id}" onclick="handleChangeStatus('${newSurprise._id}', 'live')" class="cursor-pointer flex items-center justify-center px-2 rounded border-2 ${newSurprise.live ? "live bg-blue-400 text-white border-transparent" : "border-black"}">${newSurprise.live ? "live" : "testing"}</div>
-                            </div>
-                            <div class="flex flex-col gap-1 mt-4">
-                                <label class="text-xs" for="title-${newSurprise._id}">Title</label>
-                                <input class="rounded text-sm" id="title-${newSurprise._id}" type="text" value="${newSurprise.title}">
-                            </div>
-                            <div class="flex flex-col gap-1">
-                                <label class="text-xs" for="icon-class-${newSurprise._id}">Icon Class</label>
-                                <input class="rounded text-sm" id="icon-class-${newSurprise._id}" type="text" value="${newSurprise.iconClass}">
-                            </div>
-                            <div class="flex flex-col gap-1">
-                                <label class="text-xs" for="description-${newSurprise._id}">Description</label>
-                                <textarea class="rounded text-sm" id="description-${newSurprise._id}">${newSurprise.description}</textarea>
-                            </div>
-                            <div class="flex flex-col gap-1">
-                                <label class="text-xs" for="variety-${newSurprise._id}">Variety</label>
-                                <select class="cursor-pointer rounded" id="variety-${newSurprise._id}">
-                                    <option ${newSurprise.variety === "cute" ? "selected" : ""} value="cute">cute</option>
-                                    <option ${newSurprise.variety === "romantic" ? "selected" : ""} value="romantic">romantic</option>
-                                    <option ${newSurprise.variety === "overdue" ? "selected" : ""} value="overdue">overdue</option>
-                                    <option ${newSurprise.variety === "sweet" ? "selected" : ""} value="sweet">sweet</option>
-                                    <option ${newSurprise.variety === "special" ? "selected" : ""} value="special">special</option>
-                                    <option ${newSurprise.variety === "mystery" ? "selected" : ""} value="mystery">mystery</option>
-                                </select>
-                            </div>
-                            <div class="flex flex-col gap-1">
-                                <label class="text-xs" for="magnitude-${newSurprise._id}">Magnitude</label>
-                                <select class="cursor-pointer rounded" id="magnitude-${newSurprise._id}">
-                                    <option ${newSurprise.variety === "small" ? "selected" : ""} value="small">small</option>
-                                    <option ${newSurprise.variety === "medium" ? "selected" : ""} value="medium">medium</option>
-                                    <option ${newSurprise.variety === "large" ? "selected" : ""} value="large">large</option>
-                                </select>
-                            </div>
-                            <div class="flex flex-col gap-1">
-                                <label class="text-xs" for="reveal-date-${newSurprise._id}">Reveal Date</label>
-                                <input type="datetime-local" class="rounded reveal-date" id="reveal-date-${newSurprise._id}" data-reveal-date="${newSurprise.revealDate}">
-                            </div>
-                            <div class="text-white h-8 w-full flex items-center justify-center bg-blue-500 hover:bg-blue-600 active:bg-blue-700 rounded cursor-pointer" onclick="handleUpdate('${newSurprise._id}')" data-id="${newSurprise._id}">Update</div>
-                        </div>
-                        `);
+                        $("#surprises-container").html("");
+                        res.surprises.forEach((s, idx) => appendNewSurprise(s, idx + 1));
                         closeCreateModal();
                         resetCreateModal();
-                        
-                        updateTimeInput(newSurprise._id, newSurprise.revealDate, "#reveal-date");
                     }
                 }
             });
+        }
+
+        function reloadSurprises() {
+            $.ajax({
+                url: "/surprises",
+                success: surprises => {
+                    console.log(surprises);
+                    $("#surprises-container").html("");
+                    surprises.forEach((s, idx) => appendNewSurprise(s, idx + 1));
+                },
+                error: function() { console.log(arguments) },
+            })
+        }
+
+        function appendNewSurprise(surprise, number) {
+            $("#surprises-container").append(`
+                <div class="bg-gray-200 relative flex h-fit w-96 flex flex-col bg-white rounded justify-center p-8 text-black gap-y-4 s-card border-2 ${surprise.completedAt ? 'border-green-500' : ''}" id="surprise-${surprise._id}" data-id="${surprise._id}">
+                    <div class="absolute top-2 left-2 rounded-full bg-gray-200 text-black text-sm w-6 h-6 flex items-center justify-center">${number}</div>
+                    <div class="absolute text-4xl right-2 top-2 bg-white flex items-center justify-center cursor-pointer w-8 h-8" onclick="openDeletemodal('${surprise._id}')">&times;</div>
+                    <h1 class="text-2xl">${surprise.title}</h1>
+                    <div class="flex flex-wrap items-center gap-2 py-2 border-y border-gray-300">
+                        <div id="status-${surprise._id}" onclick="handleChangeStatus('${surprise._id}', 'completed')" class="cursor-pointer flex items-center justify-center px-2 rounded border-2 ${surprise.completedAt ? "completed bg-blue-400 text-white border-transparent" : "border-black"}">${surprise.completedAt ? "completed" : "incomplete"}</div>
+                        <div id="viewed-${surprise._id}" onclick="handleChangeStatus('${surprise._id}', 'viewed')" class="cursor-pointer flex items-center justify-center px-2 rounded border-2 ${surprise.viewed ? "viewed bg-blue-400 text-white border-transparent" : "border-black"}">${surprise.viewed ? "viewed" : "not viewed yet"}</div>
+                        <div id="live-${surprise._id}" onclick="handleChangeStatus('${surprise._id}', 'live')" class="cursor-pointer flex items-center justify-center px-2 rounded border-2 ${surprise.live ? "live bg-blue-400 text-white border-transparent" : "border-black"}">${surprise.live ? "live" : "testing"}</div>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs" for="title-${surprise._id}">Title</label>
+                        <input class="rounded text-sm" id="title-${surprise._id}" type="text" value="${surprise.title}" oninput="handleChangeCardTitle('${surprise._id}')">
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs" for="icon-class-${surprise._id}">Icon Class</label>
+                        <input class="rounded text-sm" id="icon-class-${surprise._id}" type="text" value="${surprise.iconClass}">
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs" for="description-${surprise._id}">Description</label>
+                        <textarea class="rounded text-sm" id="description-${surprise._id}">${surprise.description}</textarea>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs" for="variety-${surprise._id}">Variety</label>
+                        <select class="cursor-pointer rounded" id="variety-${surprise._id}">
+                            <option ${surprise.variety === "cute" ? "selected" : ""} value="cute">cute</option>
+                            <option ${surprise.variety === "romantic" ? "selected" : ""} value="romantic">romantic</option>
+                            <option ${surprise.variety === "overdue" ? "selected" : ""} value="overdue">overdue</option>
+                            <option ${surprise.variety === "sweet" ? "selected" : ""} value="sweet">sweet</option>
+                            <option ${surprise.variety === "special" ? "selected" : ""} value="special">special</option>
+                            <option ${surprise.variety === "mystery" ? "selected" : ""} value="mystery">mystery</option>
+                        </select>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs" for="magnitude-${surprise._id}">Magnitude</label>
+                        <select class="cursor-pointer rounded" id="magnitude-${surprise._id}">
+                            <option ${surprise.variety === "small" ? "selected" : ""} value="small">small</option>
+                            <option ${surprise.variety === "medium" ? "selected" : ""} value="medium">medium</option>
+                            <option ${surprise.variety === "large" ? "selected" : ""} value="large">large</option>
+                        </select>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs" for="reveal-date-${surprise._id}">Reveal Date</label>
+                        <input type="datetime-local" class="rounded reveal-date" id="reveal-date-${surprise._id}" data-reveal-date="${surprise.revealDate}">
+                    </div>
+                    <div class="text-white h-8 w-full flex items-center justify-center bg-blue-500 hover:bg-blue-600 active:bg-blue-700 rounded cursor-pointer" onclick="handleUpdate('${surprise._id}')" data-id="${surprise._id}">Update</div>
+                </div>
+            `);
+
+            updateTimeInput(surprise._id, surprise.revealDate, "#reveal-date");
         }
 
         function closeCreateModal() {
