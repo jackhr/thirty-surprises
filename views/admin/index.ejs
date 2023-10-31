@@ -302,7 +302,7 @@
                     <div class="absolute text-4xl right-2 top-2 bg-white flex items-center justify-center cursor-pointer w-8 h-8" onclick="openDeletemodal('${s._id}')">&times;</div>
                     <h1 class="text-2xl w-full">${s.title}</h1>
                     <div class="flex flex-wrap items-center gap-2 py-2 border-y border-gray-300 w-full">
-                        <div id="status-${s._id}" onclick="handleStatusChange('${s._id}', 'completed')" class="cursor-pointer flex items-center justify-center px-2 rounded border-2 ${s.completedAt ? "completed bg-blue-400 text-white border-transparent" : "border-black"}">${s.completedAt ? "completed" : "incomplete"}</div>
+                        <div id="completed-${s._id}" onclick="handleStatusChange('${s._id}', 'completed')" class="cursor-pointer flex items-center justify-center px-2 rounded border-2 ${s.completedAt ? "completed bg-blue-400 text-white border-transparent" : "border-black"}">${s.completedAt ? "completed" : "incomplete"}</div>
                         <div id="viewed-${s._id}" onclick="handleStatusChange('${s._id}', 'viewed')" class="cursor-pointer flex items-center justify-center px-2 rounded border-2 ${s.viewed ? "viewed bg-blue-400 text-white border-transparent" : "border-black"}">${s.viewed ? "viewed" : "not viewed yet"}</div>
                         <div id="live-${s._id}" onclick="handleStatusChange('${s._id}', 'live')" class="cursor-pointer flex items-center justify-center px-2 rounded border-2 ${s.live ? "live bg-blue-400 text-white border-transparent" : "border-black"}">${s.live ? "live" : "testing"}</div>
                     </div>
