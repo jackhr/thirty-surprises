@@ -8,6 +8,7 @@ module.exports = {
     update,
     notify,
     all,
+    testEmail,
     delete: deleteOne
 };
 
@@ -106,9 +107,27 @@ async function create(req, res) {
         const surprises = await getAllSurprises();
         const emailRes = await sendEmail(
             "New Surprise!",
-            "There's a new surprise waiting for you!"
+            "There's a new surprise waiting for you! See if you can guess it 😉"
         );
         res.json({ surprises, newSurprise, emailRes });
+    } catch(error) {
+        res.json({ error: error.message });
+    }
+}
+
+async function testEmail(req, res) {
+    try {
+        if (process.env.TESTING_PASSWORD !== req.body.password) {
+            res.json({
+                error: "Invalid credentials"
+            });
+            return;
+        }
+        const emailRes = await sendEmail(
+            req.body.email_subject,
+            req.body.email_body
+        );
+        res.json({ emailRes });
     } catch(error) {
         res.json({ error: error.message });
     }
