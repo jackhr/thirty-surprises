@@ -134,7 +134,6 @@
 
     function handleClick(surpriseCard) {
         const surpriseID = $(surpriseCard).data('id');
-        notifyClient(surpriseID)
         
         if ($(surpriseCard).hasClass('upcoming')) {
             $(surpriseCard).find(".countdown-container *").toggleClass("opacity-0 opacity-100");
@@ -206,7 +205,6 @@
                 window[`jiggleInterval${surpriseID}`] = setInterval(() => {
                     handleJiggle(surpriseCard);
                 }, 2000);
-                notifyClient(surpriseID);
             }
         } else {
             const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
@@ -216,15 +214,6 @@
             
             $(surpriseCard).find('.countdown').html(`${days}d ${hours}h ${minutes}m ${seconds}s`);
         }
-    }
-
-    function notifyClient(surpriseID) {
-        $.ajax({
-            url: `/admin/surprise/${surpriseID}/notify`,
-            success: function() {
-                console.log(arguments);
-            }
-        })
     }
 
 </script>
