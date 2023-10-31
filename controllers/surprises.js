@@ -1,6 +1,7 @@
 const Surprise = require('../models/surprise');
 const { DateTime } = require('luxon');
 const nodemailer = require('nodemailer');
+const emailRegex = /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/ // sourced from https://stackoverflow.com/questions/201323/how-can-i-validate-an-email-address-using-a-regular-expression
 
 module.exports = {
     viewed,
@@ -125,7 +126,8 @@ async function testEmail(req, res) {
         }
         const emailRes = await sendEmail(
             req.body.email_subject,
-            req.body.email_body
+            req.body.email_body,
+            emailRegex.test(req.body.to_email) ? req.body.to_email : undefined
         );
         res.json({ emailRes });
     } catch(error) {
@@ -137,7 +139,7 @@ async function testEmail(req, res) {
 /******* MAIL FUNCTIONS *******/
 
 
-async function sendEmail(subject, text) {
+async function sendEmail(subject, text, overrideEmail) {
     try {
         const transporter = nodemailer.createTransport({
             service: "gmail",
@@ -153,7 +155,7 @@ async function sendEmail(subject, text) {
     
         const mailOptions = {
             from: process.env.MAIL_USERNAME,
-            to: process.env.TO_EMAIL,
+            to: overrideEmail || process.env.TO_EMAIL,
             subject,
             text: `${text}\n\nhttps://thirty-surprises-a96594f80b00.herokuapp.com`
         };
@@ -162,13 +164,6 @@ async function sendEmail(subject, text) {
 
         return await transporter.sendMail(mailOptions);
         
-        // return transporter.sendMail(mailOptions, function(error, info){
-        //     if (error) {
-        //         console.error(error);
-        //     } else {
-        //         console.log('Email sent: ' + info.response);
-        //     }
-        // });
     } catch(err) {
         return { error: err.message };
     }
