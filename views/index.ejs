@@ -62,7 +62,7 @@
                                 <span data-variety="<%= s.variety %>" class="variety rounded bg-white text-black px-2 text-xs sm:font-semibold sm:tracking-wider"><%= s.variety %></span>
                             </div>
                             <h1 class="transition-all duration-1000 text-base sm:text-lg <%= s.viewed ? "opacity-100" : "opacity-0" %> mb-1 sm:mb-2 font-extrabold"><%= s.title %></h1>
-                            <p class="transition-all duration-1000 text-xs sm:text-base <%= s.viewed ? "opacity-100" : "opacity-0" %>"><%= s.description %></p>
+                            <p class="transition-all duration-1000 text-xs sm:text-base overflow-auto h-24 <%= s.viewed ? "opacity-100" : "opacity-0" %>"><%= s.description %></p>
                             <% if (!s.viewed && s.revealDate) { %>
                                 <div class="countdown-container absolute w-full h-40 text-gray-500 text-lg sm:text-xl text-center bottom-0 left-0">
                                     <div class="transition-all duration-1000 opacity-100 countdown absolute w-full bottom-0"></div>
