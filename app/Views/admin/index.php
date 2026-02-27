@@ -70,16 +70,34 @@
     </div>
 
     <script>
-        const INITIAL_SURPRISES = <?= json_encode($surprises ?? [], JSON_UNESCAPED_UNICODE) ?>;
-
         $(document).ready(() => {
-            if (Array.isArray(INITIAL_SURPRISES) && INITIAL_SURPRISES.length) {
-                $('#surprises-container').html('');
-                INITIAL_SURPRISES.forEach((s, idx) => appendNewSurprise(s, idx + 1));
-            } else {
-                reloadSurprises();
-            }
+            reloadSurprises();
         });
+
+        async function requestJson(url, options = {}) {
+            const response = await fetch(url, {
+                credentials: 'same-origin',
+                ...options,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    ...options.headers,
+                },
+            });
+
+            let payload;
+            try {
+                payload = await response.json();
+            } catch (error) {
+                throw new Error(`Invalid server response (${response.status})`);
+            }
+
+            if (!response.ok || payload.error) {
+                const message = payload.error || `Request failed (${response.status})`;
+                throw new Error(message);
+            }
+
+            return payload;
+        }
 
         function handleChangeCardTitle(surpriseID) {
             const newTitle = $(`#title-${surpriseID}`).val();
@@ -138,24 +156,27 @@
                 .text(statusIsTrue ? falsyStatus : truthyStatus);
         }
 
-        function handleDelete() {
-            $.ajax({
-                url: `/admin/surprise/${$('.deleting').data('id')}`,
-                method: 'DELETE',
-                success: function(deletedSurprise, status) {
-                    if (status === 'success') {
-                        $('.deleting').remove();
-                        updateCardCount();
-                        closeDeleteModal();
-                    } else {
-                        swal({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'Something went wrong'
-                        });
-                    }
-                }
-            });
+        async function handleDelete() {
+            const deletingId = $('.deleting').data('id');
+            if (!deletingId) {
+                return;
+            }
+
+            try {
+                await requestJson(`/admin/surprise/${deletingId}`, {
+                    method: 'DELETE',
+                });
+
+                $('.deleting').remove();
+                updateCardCount();
+                closeDeleteModal();
+            } catch (error) {
+                swal({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.message || 'Something went wrong',
+                });
+            }
         }
 
         function closeDeleteModal() {
@@ -179,114 +200,116 @@
             }, 10);
         }
 
-        function handleUpdate(surpriseID) {
-            let revealDate;
-            if ($(`#reveal-date-${surpriseID}`).val()) {
-                revealDate = new Date($(`#reveal-date-${surpriseID}`).val());
-            }
-            const data = {
+        async function handleUpdate(surpriseID) {
+            const revealDate = $(`#reveal-date-${surpriseID}`).val().trim();
+            const data = new URLSearchParams({
                 title: $(`#title-${surpriseID}`).val(),
                 description: $(`#description-${surpriseID}`).val(),
                 magnitude: $(`#magnitude-${surpriseID}`).val(),
                 variety: $(`#variety-${surpriseID}`).val(),
                 iconClass: $(`#icon-class-${surpriseID}`).val(),
-                completed: $(`#completed-${surpriseID}`).hasClass('completed'),
-                viewed: $(`#viewed-${surpriseID}`).hasClass('viewed'),
-                live: $(`#live-${surpriseID}`).hasClass('live'),
+                completed: $(`#completed-${surpriseID}`).hasClass('completed') ? 'true' : 'false',
+                viewed: $(`#viewed-${surpriseID}`).hasClass('viewed') ? 'true' : 'false',
+                live: $(`#live-${surpriseID}`).hasClass('live') ? 'true' : 'false',
                 revealDate,
-            };
-            $.ajax({
-                url: `/admin/surprise/${surpriseID}`,
-                method: 'PUT',
-                data,
-                success: surprise => {
-                    const icon = surprise.error ? 'error' : 'success';
-                    const title = surprise.error ? 'Error' : 'Success';
-                    const text = surprise.error ? surprise.error : `${surprise.title} successfully updated!`;
-                    reloadSurprises();
-
-                    swal({ title, icon, text });
-                }
             });
+
+            try {
+                const surprise = await requestJson(`/admin/surprise/${surpriseID}`, {
+                    method: 'PUT',
+                    body: data,
+                });
+
+                await reloadSurprises();
+                swal({
+                    title: 'Success',
+                    icon: 'success',
+                    text: `${surprise.title} successfully updated!`,
+                });
+            } catch (error) {
+                swal({
+                    title: 'Error',
+                    icon: 'error',
+                    text: error.message || 'Unable to update surprise',
+                });
+            }
         }
 
         function updateCardCount() {
             $('.surprise-num').each((idx, num) => $(num).text(idx + 1));
         }
 
-        function handleCreate() {
-            const data = {
+        async function handleCreate() {
+            const data = new URLSearchParams({
                 title: $('#new-title').val().trim(),
                 description: $('#new-description').val().trim(),
                 variety: $('#new-variety').val().trim(),
                 magnitude: $('#new-magnitude').val().trim(),
                 iconClass: $('#new-icon-class').val().trim(),
                 revealDate: $('#new-reveal-date').val().trim(),
-            };
-
-            $.ajax({
-                url: '/admin/surprise',
-                method: 'POST',
-                data,
-                success: res => {
-                    const alerts = [];
-                    if (res.error) {
-                        alerts.push({
-                            icon: 'error',
-                            title: 'Error',
-                            text: res.error,
-                        });
-                    } else {
-                        if (!res.newSurprise.revealDate) {
-                            alerts.push({
-                                icon: 'warning',
-                                title: 'Invalid Date',
-                                text: "You didn't completely fill out the revealDate fyi, so it wasn't saved"
-                            });
-                        }
-                        if (res.emailRes && res.emailRes.error) {
-                            alerts.push({
-                                icon: 'error',
-                                title: 'Error Sending Email',
-                                text: res.emailRes.error,
-                            });
-                        }
-                        $('#surprises-container').html('');
-                        res.surprises.forEach((s, idx) => appendNewSurprise(s, idx + 1));
-                        closeCreateModal();
-                        resetCreateModal();
-
-                        if (alerts.length) handleMultipleSwals(alerts);
-                    }
-                }
             });
+
+            try {
+                const res = await requestJson('/admin/surprise', {
+                    method: 'POST',
+                    body: data,
+                });
+
+                const alerts = [];
+                if (!res.newSurprise.revealDate) {
+                    alerts.push({
+                        icon: 'warning',
+                        title: 'Invalid Date',
+                        text: "You didn't completely fill out the revealDate fyi, so it wasn't saved",
+                    });
+                }
+
+                if (res.emailRes && res.emailRes.error) {
+                    alerts.push({
+                        icon: 'error',
+                        title: 'Error Sending Email',
+                        text: res.emailRes.error,
+                    });
+                }
+
+                $('#surprises-container').html('');
+                res.surprises.forEach((s, idx) => appendNewSurprise(s, idx + 1));
+                closeCreateModal();
+                resetCreateModal();
+
+                if (alerts.length) {
+                    handleMultipleSwals(alerts);
+                }
+            } catch (error) {
+                swal({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.message || 'Unable to create surprise',
+                });
+            }
         }
 
         function handleMultipleSwals(alerts) {
             swal(alerts[0]).then(() => alerts.shift() && alerts.length && handleMultipleSwals(alerts));
         }
 
-        function reloadSurprises() {
-            $.ajax({
-                url: '/surprises',
-                success: surprises => {
-                    if (surprises.error) {
-                        swal({
-                            title: 'Error',
-                            icon: 'error',
-                            text: surprises.error
-                        });
-                    } else {
-                        if (surprises.length) {
-                            $('#surprises-container').html('');
-                            surprises.forEach((s, idx) => appendNewSurprise(s, idx + 1));
-                        } else {
-                            $('#surprises-container').html('<div>No Surprises Yet!</div>');
-                        }
-                    }
-                },
-                error: function() { console.log(arguments); },
-            });
+        async function reloadSurprises() {
+            try {
+                const surprises = await requestJson('/surprises');
+
+                if (surprises.length) {
+                    $('#surprises-container').html('');
+                    surprises.forEach((s, idx) => appendNewSurprise(s, idx + 1));
+                } else {
+                    $('#surprises-container').html('<div>No Surprises Yet!</div>');
+                }
+            } catch (error) {
+                swal({
+                    title: 'Error',
+                    icon: 'error',
+                    text: error.message || 'Unable to load surprises',
+                });
+            }
         }
 
         function appendNewSurprise(s, num) {

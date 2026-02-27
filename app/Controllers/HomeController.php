@@ -8,21 +8,14 @@ use App\Core\Auth;
 use App\Core\Request;
 use App\Core\Response;
 use App\Core\View;
-use App\Services\SurpriseRepository;
 use App\Services\UserRepository;
 
 final class HomeController
 {
     public function index(Request $request): void
     {
-        $repository = new SurpriseRepository();
-        $allSurprises = $repository->getLiveSorted();
-        $completedSurprises = array_values(array_filter($allSurprises, static fn (array $surprise): bool => !empty($surprise['viewed'])));
-
         View::render('index', [
-            'allSurprises' => $allSurprises,
-            'completedSurprises' => $completedSurprises,
-            'surprisesLeft' => 30 - count($completedSurprises),
+            'surprisesLeft' => null,
             'user' => Auth::user(),
         ]);
     }
@@ -43,6 +36,10 @@ final class HomeController
         $user = $users->findByName($name);
 
         if ($user === null || !password_verify($password, (string) $user['password'])) {
+            if ($request->isAjax()) {
+                Response::json(['error' => 'Invalid credentials'], 401);
+            }
+
             Response::redirect('/');
         }
 
@@ -51,12 +48,27 @@ final class HomeController
             'name' => (string) $user['name'],
         ]);
 
+        if ($request->isAjax()) {
+            Response::json([
+                'success' => true,
+                'redirect' => '/admin',
+            ]);
+        }
+
         Response::redirect('/admin');
     }
 
     public function logout(Request $request): void
     {
         Auth::logout();
+
+        if ($request->isAjax()) {
+            Response::json([
+                'success' => true,
+                'redirect' => '/',
+            ]);
+        }
+
         Response::redirect('/');
     }
 }

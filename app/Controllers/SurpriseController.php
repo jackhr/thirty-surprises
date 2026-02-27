@@ -14,6 +14,16 @@ use Throwable;
 
 final class SurpriseController
 {
+    public function live(Request $request): void
+    {
+        try {
+            $repository = new SurpriseRepository();
+            Response::json($repository->getLiveSorted());
+        } catch (Throwable $exception) {
+            Response::json(['error' => $exception->getMessage()], 500);
+        }
+    }
+
     public function all(Request $request): void
     {
         if (!Auth::isLoggedIn()) {
