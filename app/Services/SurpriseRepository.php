@@ -182,6 +182,7 @@ final class SurpriseRepository
             'live' => (int) ($row['live'] ?? 0) === 1,
             'completedAt' => $this->toIsoDate($row['completed_at'] ?? null),
             'revealDate' => $this->toIsoDate($row['reveal_date'] ?? null),
+            'notifiedAt' => $this->toIsoDate($row['notified_at'] ?? null),
             'createdAt' => $this->toIsoDate($row['created_at'] ?? null),
             'updatedAt' => $this->toIsoDate($row['updated_at'] ?? null),
         ];

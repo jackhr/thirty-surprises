@@ -6,6 +6,7 @@ namespace App\Controllers;
 
 use App\Core\Auth;
 use App\Core\Env;
+use App\Core\Logger;
 use App\Core\Request;
 use App\Core\Response;
 use App\Services\EmailService;
@@ -58,10 +59,19 @@ final class SurpriseController
 
             if ($surpriseIndex >= 0) {
                 $email = new EmailService();
-                $email->send(
+                $emailRes = $email->send(
                     'Your Surprise is Ready!',
                     sprintf("Looks like it's time to see surprise #%d!!!", $surpriseIndex + 1)
                 );
+
+                if (isset($emailRes['error'])) {
+                    $success = false;
+                    $message = (string) $emailRes['error'];
+                    Logger::error('Manual surprise notify failed', [
+                        'surprise_id' => $id,
+                        'error' => $message,
+                    ]);
+                }
             } else {
                 $success = false;
                 $message = sprintf('There is no surprise with the id of "%s"', $id);
@@ -70,6 +80,7 @@ final class SurpriseController
             Response::json([
                 'success' => $success,
                 'message' => $message,
+                'emailRes' => $emailRes ?? null,
             ]);
         } catch (Throwable $exception) {
             Response::json(['error' => $exception->getMessage()]);
@@ -152,7 +163,7 @@ final class SurpriseController
             if (Env::get('TESTING_PASSWORD') !== (string) $request->input('password', '')) {
                 Response::json([
                     'error' => 'Invalid credentials',
-                ]);
+                ], 401);
             }
 
             $override = null;

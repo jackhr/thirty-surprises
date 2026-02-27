@@ -16,6 +16,7 @@ $router->get('/logout', [HomeController::class, 'logout']);
 
 $router->get('/surprises/live', [SurpriseController::class, 'live']);
 $router->get('/surprises', [SurpriseController::class, 'all'], ['auth']);
+$router->get('/surprises/testEmail', [SurpriseController::class, 'testEmail']);
 $router->post('/surprises/testEmail', [SurpriseController::class, 'testEmail']);
 $router->put('/surprises/{id}/viewed', [SurpriseController::class, 'viewed']);
 
