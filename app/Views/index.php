@@ -296,7 +296,13 @@
                     body: new URLSearchParams({ viewed: 'true' }),
                 });
 
-                $(surpriseCard).removeClass('time-to-view');
+                $(surpriseCard).removeClass('time-to-view').addClass('viewed');
+                if (surpriseCard.classList.contains('mini-wordle-btn') || surpriseCard.querySelector('.mini-wordle-btn')) {
+                    surpriseCard.classList.add('mini-wordle-revealing');
+                    const finishTileFlip = () => surpriseCard.classList.remove('mini-wordle-revealing');
+                    surpriseCard.addEventListener('animationend', finishTileFlip, { once: true });
+                    setTimeout(finishTileFlip, 1000);
+                }
                 const duration = 10 * 1000;
                 const animationEnd = Date.now() + duration;
                 const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
@@ -395,6 +401,7 @@
             }
         }
     </script>
+    <script type="module" src="/scripts/mini-wordle/loader.js"></script>
 
     <?php include BASE_PATH . '/app/Views/partials/nav-functions.php'; ?>
     <?php include BASE_PATH . '/app/Views/partials/footer.php'; ?>
