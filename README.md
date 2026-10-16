@@ -51,10 +51,16 @@ Run SQL migrations in order:
 
 1. `migrations/mysql/001_create_tables.sql`
 2. `migrations/mysql/002_seed_from_mongodb_dump.sql` (optional seed)
+3. `migrations/mysql/003_add_surprise_notified_at.sql`
+4. `migrations/mysql/004_create_wordle_games.sql` (daily Ash Wordle games and attempts)
+5. `migrations/mysql/005_add_wordle_bonus_rounds.sql` (bonus "Another?" rounds)
 
 ```bash
 mysql -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -p "$DB_NAME" < migrations/mysql/001_create_tables.sql
 mysql -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -p "$DB_NAME" < migrations/mysql/002_seed_from_mongodb_dump.sql
+mysql -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -p "$DB_NAME" < migrations/mysql/003_add_surprise_notified_at.sql
+mysql -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -p "$DB_NAME" < migrations/mysql/004_create_wordle_games.sql
+mysql -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -p "$DB_NAME" < migrations/mysql/005_add_wordle_bonus_rounds.sql
 ```
 
 Alternative setup script:

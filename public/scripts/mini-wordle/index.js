@@ -1,13 +1,15 @@
 import { AshWordleElement, defineAshWordleElement } from "./ash-wordle.js";
-import { getDailyAnswer, normalizeWordList, scoreGuess } from "./word-logic.js";
+import { createWordleApi } from "./wordle-api.js";
+import { getBonusAnswer, getDailyAnswer, normalizeWordList, scoreGuess } from "./word-logic.js";
 
 defineAshWordleElement();
 
-export { AshWordleElement, getDailyAnswer, normalizeWordList, scoreGuess };
+export { AshWordleElement, createWordleApi, getBonusAnswer, getDailyAnswer, normalizeWordList, scoreGuess };
 
 export function createAshWordle(options = {}) {
   defineAshWordleElement();
   const game = document.createElement("ash-wordle");
+  if (options.persistence) game.persistence = options.persistence;
   game.words = options.words ?? [];
   if (options.solution) game.solution = options.solution;
   if (options.maxAttempts) game.maxAttempts = options.maxAttempts;

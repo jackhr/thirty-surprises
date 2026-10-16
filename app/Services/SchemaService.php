@@ -84,6 +84,38 @@ final class SchemaService
         if (!$this->mysqlIndexExists($db, 'surprises', 'idx_surprises_notified_at')) {
             $db->exec('CREATE INDEX idx_surprises_notified_at ON surprises(notified_at)');
         }
+
+        $db->exec(
+            'CREATE TABLE IF NOT EXISTS wordle_games (
+                id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                puzzle_date DATE NOT NULL,
+                round_number SMALLINT UNSIGNED NOT NULL DEFAULT 1,
+                solution CHAR(5) NOT NULL,
+                guesses JSON NOT NULL,
+                attempts TINYINT UNSIGNED NOT NULL DEFAULT 0,
+                status ENUM("in_progress","won","lost") NOT NULL DEFAULT "in_progress",
+                completed_at DATETIME NULL,
+                created_at DATETIME NOT NULL,
+                updated_at DATETIME NOT NULL,
+                UNIQUE KEY uq_wordle_games_date_round (puzzle_date, round_number),
+                INDEX idx_wordle_games_status (status)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4'
+        );
+
+        // Tables created before bonus rounds allowed only one game per day.
+        if (!$this->mysqlColumnExists($db, 'wordle_games', 'round_number')) {
+            $db->exec('ALTER TABLE wordle_games ADD COLUMN round_number SMALLINT UNSIGNED NOT NULL DEFAULT 1 AFTER puzzle_date');
+        }
+
+        if (!$this->mysqlIndexExists($db, 'wordle_games', 'uq_wordle_games_date_round')) {
+            $db->exec('ALTER TABLE wordle_games ADD UNIQUE KEY uq_wordle_games_date_round (puzzle_date, round_number)');
+        }
+
+        foreach (['uq_wordle_games_puzzle_date', 'puzzle_date'] as $dailyIndex) {
+            if ($this->mysqlIndexExists($db, 'wordle_games', $dailyIndex)) {
+                $db->exec(sprintf('ALTER TABLE wordle_games DROP INDEX %s', $dailyIndex));
+            }
+        }
     }
 
     private function migrateSqlite(PDO $db): void
@@ -133,7 +165,24 @@ final class SchemaService
             $db->exec('ALTER TABLE surprises ADD COLUMN notified_at TEXT NULL');
         }
 
+        $db->exec(
+            'CREATE TABLE IF NOT EXISTS wordle_games (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                puzzle_date TEXT NOT NULL,
+                round_number INTEGER NOT NULL DEFAULT 1,
+                solution TEXT NOT NULL,
+                guesses TEXT NOT NULL DEFAULT "[]",
+                attempts INTEGER NOT NULL DEFAULT 0,
+                status TEXT NOT NULL DEFAULT "in_progress",
+                completed_at TEXT NULL,
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL,
+                UNIQUE (puzzle_date, round_number)
+            )'
+        );
+
         $db->exec('CREATE INDEX IF NOT EXISTS idx_notifications_reveal_date ON notifications(reveal_date)');
+        $db->exec('CREATE INDEX IF NOT EXISTS idx_wordle_games_status ON wordle_games(status)');
         $db->exec('CREATE INDEX IF NOT EXISTS idx_surprises_reveal_date ON surprises(reveal_date)');
         $db->exec('CREATE INDEX IF NOT EXISTS idx_surprises_notified_at ON surprises(notified_at)');
         $db->exec('CREATE INDEX IF NOT EXISTS idx_surprises_notification_id ON surprises(notification_id)');

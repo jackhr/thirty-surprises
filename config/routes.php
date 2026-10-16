@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Controllers\AdminController;
 use App\Controllers\HomeController;
 use App\Controllers\SurpriseController;
+use App\Controllers\WordleController;
 use App\Core\Router;
 
 $router = new Router();
@@ -19,6 +20,9 @@ $router->get('/surprises', [SurpriseController::class, 'all'], ['auth']);
 $router->get('/surprises/testEmail', [SurpriseController::class, 'testEmail']);
 $router->post('/surprises/testEmail', [SurpriseController::class, 'testEmail']);
 $router->put('/surprises/{id}/viewed', [SurpriseController::class, 'viewed']);
+
+$router->get('/wordle/{date}', [WordleController::class, 'show']);
+$router->put('/wordle/{date}', [WordleController::class, 'save']);
 
 $router->get('/admin', [AdminController::class, 'index'], ['auth']);
 $router->get('/admin/surprise/{id}/notify', [SurpriseController::class, 'notify'], ['auth']);

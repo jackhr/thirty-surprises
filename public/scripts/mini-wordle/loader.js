@@ -1,6 +1,7 @@
-import { mountAshWordle } from "./index.js";
+import { createWordleApi, mountAshWordle } from "./index.js";
+import { WORDS } from "./words.js";
 
-const WORDS = ["PENNY", "BACON", "ANSEL", "SUNSET", "COFFEE", "JACK", "AUTUMN", "MOVIES", "JANET", "CANDLE"];
+const wordleApi = createWordleApi();
 let activeDialog = null;
 
 function prepareTriggers(root = document) {
@@ -67,7 +68,10 @@ function openWordle(trigger) {
   activeDialog = dialog;
   dialog.showModal();
 
-  const game = mountAshWordle(dialog.querySelector(".mini-wordle-dialog__game"), { words: WORDS });
+  const game = mountAshWordle(dialog.querySelector(".mini-wordle-dialog__game"), {
+    words: WORDS,
+    persistence: wordleApi,
+  });
   game.focus({ preventScroll: true });
 }
 
