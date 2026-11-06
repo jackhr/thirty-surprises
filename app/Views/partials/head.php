@@ -14,7 +14,7 @@ $computedTitle = (isset($surprisesLeft) && is_numeric($surprisesLeft) && (int) $
     <link rel="stylesheet" href="/stylesheets/output.css" />
     <link rel="stylesheet" href="/scripts/mini-wordle/mini-wordle.css" />
 
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400&family=Yeseva+One&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Yeseva+One&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" referrerpolicy="no-referrer" />
 

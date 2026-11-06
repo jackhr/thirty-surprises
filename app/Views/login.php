@@ -2,20 +2,23 @@
 <html lang="en">
 <?php include BASE_PATH . '/app/Views/partials/head.php'; ?>
 
-<body>
-    <div class="w-full h-screen flex items-center justify-center text-black">
-        <form id="login-form" method="POST" action="/login" class="p-6 bg-gray-100 rounded flex flex-col items-center gap-y-4">
-            <div class="flex items-center name">
-                <label class="w-24" for="name">Name:</label>
-                <input id="name" type="text" name="name" class="rounded">
+<body class="bg-slate-100">
+    <div class="w-full min-h-screen flex items-center justify-center p-4 text-gray-900">
+        <form id="login-form" method="POST" action="/login" class="w-full max-w-sm p-8 bg-white rounded-2xl shadow-xl flex flex-col gap-y-4">
+            <h1 class="text-2xl font-semibold mb-2">Log in</h1>
+            <div class="flex flex-col gap-1 name">
+                <label class="field-label" for="name">Name</label>
+                <input id="name" type="text" name="name" autocomplete="username">
             </div>
-            <div class="flex items-center relative password">
-                <label class="w-24" id="password-label" for="password">Password:</label>
-                <input id="password" type="password" name="password" class="rounded">
-                <img class="cursor-pointer absolute right-4 hide hidden" src="/images/eye-strikethrough.svg" alt="Closed eye icon.">
-                <img class="cursor-pointer absolute right-4 view" src="/images/eye.svg" alt="Open eye icon.">
+            <div class="flex flex-col gap-1 password">
+                <label class="field-label" id="password-label" for="password">Password</label>
+                <div class="relative">
+                    <input id="password" type="password" name="password" class="w-full pr-12" autocomplete="current-password">
+                    <img class="cursor-pointer absolute right-3 top-1/2 -translate-y-1/2 hide hidden" src="/images/eye-strikethrough.svg" alt="Hide password">
+                    <img class="cursor-pointer absolute right-3 top-1/2 -translate-y-1/2 view" src="/images/eye.svg" alt="Show password">
+                </div>
             </div>
-            <button class="text-white h-8 w-full flex items-center justify-center bg-blue-500 rounded">Login</button>
+            <button class="btn mt-2 bg-blue-500 hover:bg-blue-600 active:bg-blue-700">Login</button>
             <div id="login-error" class="hidden text-xs text-red-600 w-full text-center"></div>
         </form>
     </div>

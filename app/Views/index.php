@@ -272,7 +272,7 @@
         }
 
         function buildSurpriseCard(surprise, number) {
-            const cardClass = 'surprise-card relative w-40 h-40 sm:w-48 sm:h-48 border-2 border-gray-300 rounded-lg cursor-pointer overflow-hidden';
+            const cardClass = 'surprise-card relative w-40 h-40 sm:w-48 sm:h-48 bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-shadow cursor-pointer overflow-hidden';
             const iconClass = 'absolute w-full h-full text-6xl sm:text-8xl text-gray-500 flex items-center justify-center';
 
             if (!surprise || (!surprise.viewed && !surprise.revealDate)) {
@@ -307,11 +307,11 @@
                     </div>
                     <div class="surprise-body w-full h-full relative p-2 pt-10">
                         <div class="absolute p-2 left-0 top-0 w-full flex justify-between items-center">
-                            <span data-magnitude="${escapeHtml(surprise.magnitude)}" class="magnitude rounded bg-white text-black px-2">${escapeHtml(surprise.magnitude)}</span>
+                            <span data-magnitude="${escapeHtml(surprise.magnitude)}" class="magnitude rounded-full bg-gray-100 text-black px-2">${escapeHtml(surprise.magnitude)}</span>
                             <span class="text-sm text-gray-500">${number}</span>
-                            <span data-variety="${escapeHtml(surprise.variety)}" class="variety rounded bg-white text-black px-2 text-xs sm:font-semibold sm:tracking-wider">${escapeHtml(surprise.variety)}</span>
+                            <span data-variety="${escapeHtml(surprise.variety)}" class="variety rounded-full bg-gray-100 text-black px-2 text-xs sm:font-semibold sm:tracking-wider">${escapeHtml(surprise.variety)}</span>
                         </div>
-                        <h1 class="transition-all duration-1000 text-base sm:text-lg ${titleOpacity} mb-1 sm:mb-2 font-extrabold">${escapeHtml(surprise.title)}</h1>
+                        <h1 class="transition-all duration-1000 text-base sm:text-lg ${titleOpacity} mb-1 sm:mb-2 font-semibold">${escapeHtml(surprise.title)}</h1>
                         <p class="transition-all duration-1000 text-xs sm:text-base overflow-auto h-24 ${titleOpacity}">${escapeHtml(surprise.description)}</p>
                         ${isExpansion ? `
                             <div class="expansion-badge transition-all duration-1000 ${titleOpacity}">
