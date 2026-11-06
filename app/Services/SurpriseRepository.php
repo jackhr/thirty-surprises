@@ -8,11 +8,16 @@ use App\Core\Database;
 use App\Core\Env;
 use DateTimeImmutable;
 use DateTimeZone;
+use InvalidArgumentException;
 use PDO;
 use Throwable;
 
 final class SurpriseRepository
 {
+    public const TYPE_NORMAL = 'normal';
+    public const TYPE_EXPANSION = 'expansion';
+    public const MAX_EXTRA_SLOTS = 100;
+
     private PDO $db;
 
     public function __construct()
@@ -36,6 +41,20 @@ final class SurpriseRepository
         return array_map(fn (array $row): array => $this->mapRow($row), $rows ?: []);
     }
 
+    /**
+     * Board size: the base slot count plus the slots unlocked by every live expansion surprise that has been opened.
+     */
+    public function getTotalSlots(): int
+    {
+        $statement = $this->db->prepare(
+            'SELECT COALESCE(SUM(extra_slots), 0) FROM surprises WHERE type = :type AND live = 1 AND viewed = 1'
+        );
+        $statement->execute(['type' => self::TYPE_EXPANSION]);
+        $extraSlots = (int) $statement->fetchColumn();
+
+        return (new SettingsRepository())->getBaseSurpriseSlots() + $extraSlots;
+    }
+
     public function findById(string|int $id): ?array
     {
         $statement = $this->db->prepare('SELECT * FROM surprises WHERE id = :id LIMIT 1');
@@ -53,12 +72,13 @@ final class SurpriseRepository
         $variety = trim((string) ($data['variety'] ?? 'sweet'));
         $iconClass = trim((string) ($data['iconClass'] ?? 'fa-solid fa-gift'));
         $revealDate = $this->parseDateInput($data['revealDate'] ?? null);
+        [$type, $extraSlots] = $this->parseType($data['type'] ?? null, $data['extraSlots'] ?? null);
 
         $now = gmdate('Y-m-d H:i:s');
 
         $statement = $this->db->prepare(
-            'INSERT INTO surprises (title, description, surprise_number, magnitude, variety, icon_class, viewed, live, completed_at, reveal_date, created_at, updated_at)
-             VALUES (:title, :description, :surprise_number, :magnitude, :variety, :icon_class, :viewed, :live, :completed_at, :reveal_date, :created_at, :updated_at)'
+            'INSERT INTO surprises (title, description, surprise_number, magnitude, variety, type, extra_slots, icon_class, viewed, live, completed_at, reveal_date, created_at, updated_at)
+             VALUES (:title, :description, :surprise_number, :magnitude, :variety, :type, :extra_slots, :icon_class, :viewed, :live, :completed_at, :reveal_date, :created_at, :updated_at)'
         );
 
         $statement->execute([
@@ -67,6 +87,8 @@ final class SurpriseRepository
             'surprise_number' => null,
             'magnitude' => $magnitude,
             'variety' => $variety,
+            'type' => $type,
+            'extra_slots' => $extraSlots,
             'icon_class' => $iconClass,
             'viewed' => 0,
             'live' => 0,
@@ -94,6 +116,10 @@ final class SurpriseRepository
         $magnitude = trim((string) ($data['magnitude'] ?? $existing['magnitude']));
         $variety = trim((string) ($data['variety'] ?? $existing['variety']));
         $iconClass = trim((string) ($data['iconClass'] ?? $existing['iconClass']));
+        [$type, $extraSlots] = $this->parseType(
+            $data['type'] ?? $existing['type'],
+            $data['extraSlots'] ?? $existing['extraSlots'],
+        );
 
         $live = to_bool_int($data['live'] ?? $existing['live']);
         $viewed = to_bool_int($data['viewed'] ?? $existing['viewed']);
@@ -117,6 +143,8 @@ final class SurpriseRepository
                  description = :description,
                  magnitude = :magnitude,
                  variety = :variety,
+                 type = :type,
+                 extra_slots = :extra_slots,
                  icon_class = :icon_class,
                  viewed = :viewed,
                  live = :live,
@@ -131,6 +159,8 @@ final class SurpriseRepository
             'description' => $description,
             'magnitude' => $magnitude,
             'variety' => $variety,
+            'type' => $type,
+            'extra_slots' => $extraSlots,
             'icon_class' => $iconClass,
             'viewed' => $viewed,
             'live' => $live,
@@ -177,6 +207,8 @@ final class SurpriseRepository
             'number' => isset($row['surprise_number']) ? (int) $row['surprise_number'] : null,
             'magnitude' => (string) ($row['magnitude'] ?? 'medium'),
             'variety' => (string) ($row['variety'] ?? 'sweet'),
+            'type' => (string) ($row['type'] ?? self::TYPE_NORMAL),
+            'extraSlots' => (int) ($row['extra_slots'] ?? 0),
             'iconClass' => (string) ($row['icon_class'] ?? ''),
             'viewed' => (int) ($row['viewed'] ?? 0) === 1,
             'live' => (int) ($row['live'] ?? 0) === 1,
@@ -186,6 +218,26 @@ final class SurpriseRepository
             'createdAt' => $this->toIsoDate($row['created_at'] ?? null),
             'updatedAt' => $this->toIsoDate($row['updated_at'] ?? null),
         ];
+    }
+
+    /**
+     * @return array{0: string, 1: int} The surprise type and how many slots it unlocks (always 0 for normal surprises).
+     */
+    private function parseType(mixed $type, mixed $extraSlots): array
+    {
+        if (trim((string) $type) !== self::TYPE_EXPANSION) {
+            return [self::TYPE_NORMAL, 0];
+        }
+
+        $slots = filter_var($extraSlots, FILTER_VALIDATE_INT);
+        if ($slots === false || $slots < 1 || $slots > self::MAX_EXTRA_SLOTS) {
+            throw new InvalidArgumentException(sprintf(
+                'A "more surprises" surprise needs between 1 and %d extra slots',
+                self::MAX_EXTRA_SLOTS
+            ));
+        }
+
+        return [self::TYPE_EXPANSION, $slots];
     }
 
     private function toIsoDate(?string $value): ?string

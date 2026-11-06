@@ -22,6 +22,17 @@
             <div class="absolute text-4xl right-2 top-2 bg-white flex items-center justify-center cursor-pointer w-8 h-8" onclick="closeCreateModal()">&times;</div>
             <h1 class="text-2xl">Create Surprise</h1>
             <div class="flex flex-col gap-1 mt-4">
+                <label class="text-xs" for="new-type">Type</label>
+                <select class="cursor-pointer rounded" id="new-type" onchange="toggleExtraSlots('new')">
+                    <option selected value="normal">Normal surprise</option>
+                    <option value="expansion">More surprises (adds slots when opened)</option>
+                </select>
+            </div>
+            <div class="flex flex-col gap-1 hidden" id="new-extra-slots-field">
+                <label class="text-xs" for="new-extra-slots">Extra surprises to add when opened</label>
+                <input class="rounded text-sm" id="new-extra-slots" type="number" min="1" max="100" step="1" value="10">
+            </div>
+            <div class="flex flex-col gap-1">
                 <label for="new-title" class="text-xs">Title</label>
                 <input id="new-title" type="text" class="rounded text-sm">
             </div>
@@ -208,6 +219,8 @@
                 magnitude: $(`#magnitude-${surpriseID}`).val(),
                 variety: $(`#variety-${surpriseID}`).val(),
                 iconClass: $(`#icon-class-${surpriseID}`).val(),
+                type: $(`#type-${surpriseID}`).val(),
+                extraSlots: $(`#extra-slots-${surpriseID}`).val().trim(),
                 completed: $(`#completed-${surpriseID}`).hasClass('completed') ? 'true' : 'false',
                 viewed: $(`#viewed-${surpriseID}`).hasClass('viewed') ? 'true' : 'false',
                 live: $(`#live-${surpriseID}`).hasClass('live') ? 'true' : 'false',
@@ -247,6 +260,8 @@
                 magnitude: $('#new-magnitude').val().trim(),
                 iconClass: $('#new-icon-class').val().trim(),
                 revealDate: $('#new-reveal-date').val().trim(),
+                type: $('#new-type').val(),
+                extraSlots: $('#new-extra-slots').val().trim(),
             });
 
             try {
@@ -321,10 +336,22 @@
                     <div class="surprise-num absolute top-2 left-2 rounded-full bg-gray-200 text-black text-sm w-6 h-6 flex items-center justify-center">${num}</div>
                     <div class="absolute text-4xl right-2 top-2 bg-white flex items-center justify-center cursor-pointer w-8 h-8" onclick="openDeletemodal('${s.id}')">&times;</div>
                     <h1 class="text-2xl w-full">${s.title}</h1>
+                    ${s.type === 'expansion' ? `<div class="w-full text-sm font-bold text-indigo-500">More surprises: adds ${s.extraSlots} when opened</div>` : ''}
                     <div class="flex flex-wrap items-center gap-2 py-2 border-y border-gray-300 w-full">
                         <div id="completed-${s.id}" onclick="handleStatusChange('${s.id}', 'completed')" class="cursor-pointer flex items-center justify-center px-2 rounded border-2 ${s.completedAt ? 'completed bg-blue-400 text-white border-transparent' : 'border-black'}">${s.completedAt ? 'completed' : 'incomplete'}</div>
                         <div id="viewed-${s.id}" onclick="handleStatusChange('${s.id}', 'viewed')" class="cursor-pointer flex items-center justify-center px-2 rounded border-2 ${s.viewed ? 'viewed bg-blue-400 text-white border-transparent' : 'border-black'}">${s.viewed ? 'viewed' : 'not viewed yet'}</div>
                         <div id="live-${s.id}" onclick="handleStatusChange('${s.id}', 'live')" class="cursor-pointer flex items-center justify-center px-2 rounded border-2 ${s.live ? 'live bg-blue-400 text-white border-transparent' : 'border-black'}">${s.live ? 'live' : 'testing'}</div>
+                    </div>
+                    <div class="flex flex-col gap-1 w-full">
+                        <label class="text-xs" for="type-${s.id}">Type</label>
+                        <select class="cursor-pointer rounded" id="type-${s.id}" onchange="toggleExtraSlots('${s.id}')">
+                            <option ${s.type !== 'expansion' ? 'selected' : ''} value="normal">Normal surprise</option>
+                            <option ${s.type === 'expansion' ? 'selected' : ''} value="expansion">More surprises (adds slots when opened)</option>
+                        </select>
+                    </div>
+                    <div class="flex flex-col gap-1 w-full ${s.type === 'expansion' ? '' : 'hidden'}" id="${s.id}-extra-slots-field">
+                        <label class="text-xs" for="extra-slots-${s.id}">Extra surprises to add when opened</label>
+                        <input class="rounded text-sm" id="extra-slots-${s.id}" type="number" min="1" max="100" step="1" value="${s.type === 'expansion' ? s.extraSlots : 10}">
                     </div>
                     <div class="flex flex-col gap-1 w-full">
                         <label class="text-xs" for="title-${s.id}">Title</label>
@@ -379,6 +406,16 @@
             $('#new-reveal-date').val('');
             $('#new-variety').val('sweet');
             $('#new-magnitude').val('medium');
+            $('#new-type').val('normal');
+            $('#new-extra-slots').val('10');
+            toggleExtraSlots('new');
+        }
+
+        // prefix is "new" for the create modal, or a surprise id for an edit card.
+        function toggleExtraSlots(prefix) {
+            const typeSelect = prefix === 'new' ? '#new-type' : `#type-${prefix}`;
+            const isExpansion = $(typeSelect).val() === 'expansion';
+            $(`#${prefix}-extra-slots-field`).toggleClass('hidden', !isExpansion);
         }
 
         function openCreateModal() {

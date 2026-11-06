@@ -45,9 +45,12 @@
     </main>
 
     <script>
-        const TOTAL_SURPRISE_SLOTS = 30;
+        // Gap between each newly unlocked slot fading in.
+        const SLOT_STAGGER_MS = 250;
 
         const STATE = {
+            surprises: [],
+            totalSlots: 0,
             magnitudeClassLookup: {
                 small: 'text-xs text-emerald-400',
                 medium: 'text-xs sm:text-sm text-emerald-500 font-medium',
@@ -115,33 +118,72 @@
 
         async function loadSurprises() {
             try {
-                const surprises = await requestJson('/surprises/live');
-                if (!Array.isArray(surprises)) {
+                const payload = await requestJson('/surprises/live');
+                if (!Array.isArray(payload.surprises) || !Number.isInteger(payload.totalSlots)) {
                     throw new Error('Invalid surprises response');
                 }
 
-                renderSurprises(surprises);
+                renderSurprises(payload.surprises, payload.totalSlots);
             } catch (error) {
                 $('#surprises').html('<div class="text-red-600">Unable to load surprises right now.</div>');
                 updateSurprisesLeftDisplay(null);
             }
         }
 
-        function renderSurprises(surprises) {
+        function renderSurprises(surprises, totalSlots) {
             clearAllIntervals();
+            STATE.surprises = surprises;
+            STATE.totalSlots = totalSlots;
 
             const cards = [];
-            for (let i = 1; i <= TOTAL_SURPRISE_SLOTS; i += 1) {
+            for (let i = 1; i <= totalSlots; i += 1) {
                 cards.push(buildSurpriseCard(surprises[i - 1] || null, i));
             }
 
             $('#surprises').html(cards.join(''));
-            applyTagClasses();
-            bindCountdowns();
+            initCards($('#surprises .surprise-card'));
+            updateSurprisesLeftDisplay(countSurprisesLeft());
+        }
 
-            const viewedCount = surprises.filter(s => Boolean(s && s.viewed)).length;
-            const surprisesLeft = Math.max(TOTAL_SURPRISE_SLOTS - viewedCount, 0);
-            updateSurprisesLeftDisplay(surprisesLeft);
+        function initCards($cards) {
+            applyTagClasses($cards);
+            bindCountdowns($cards);
+        }
+
+        function countSurprisesLeft() {
+            const onBoard = STATE.surprises.slice(0, STATE.totalSlots);
+            const viewedCount = onBoard.filter(s => Boolean(s && s.viewed)).length;
+            return Math.max(STATE.totalSlots - viewedCount, 0);
+        }
+
+        // Adds the slots unlocked by an expansion surprise and fades them in one after another.
+        // Afterwards they are ordinary cards; on later page loads they simply render with the rest.
+        function expandBoard(newTotalSlots) {
+            const firstNewSlot = STATE.totalSlots + 1;
+            if (newTotalSlots < firstNewSlot) {
+                return;
+            }
+
+            const html = [];
+            for (let n = firstNewSlot; n <= newTotalSlots; n += 1) {
+                html.push(buildSurpriseCard(STATE.surprises[n - 1] || null, n));
+            }
+
+            // Insert every new card up front (invisible) so the grid lays out once, then reveal them in turn.
+            const $newCards = $($.parseHTML(html.join('').trim())).filter('.surprise-card').addClass('slot-enter');
+            $('#surprises').append($newCards);
+            initCards($newCards);
+            void $newCards[0].offsetWidth;
+            $newCards[0].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+            $newCards.each((idx, card) => {
+                setTimeout(() => {
+                    $(card).addClass('slot-entered');
+                    STATE.totalSlots = firstNewSlot + idx;
+                    updateSurprisesLeftDisplay(countSurprisesLeft());
+                    setTimeout(() => $(card).removeClass('slot-enter slot-entered'), 700);
+                }, idx * SLOT_STAGGER_MS);
+            });
         }
 
         function clearAllIntervals() {
@@ -151,32 +193,32 @@
             STATE.jiggleIntervals = {};
         }
 
-        function bindCountdowns() {
-            $('.surprise-card.upcoming').each((idx, surpriseCard) => {
+        function bindCountdowns($cards) {
+            $cards.filter('.upcoming').each((idx, surpriseCard) => {
                 const revealDate = $(surpriseCard).data('reveal-date');
                 if (!revealDate) {
                     return;
                 }
 
-                const key = getCardKey(surpriseCard, idx);
+                const key = getCardKey(surpriseCard);
                 updateCountdown(surpriseCard, key);
                 STATE.countdownIntervals[key] = setInterval(() => updateCountdown(surpriseCard, key), 1000);
             });
         }
 
-        function getCardKey(surpriseCard, idx) {
+        function getCardKey(surpriseCard) {
             const surpriseID = $(surpriseCard).data('id');
-            return surpriseID ? `surprise-${surpriseID}` : `slot-${idx}`;
+            return surpriseID ? `surprise-${surpriseID}` : `slot-${$(surpriseCard).data('slot')}`;
         }
 
-        function applyTagClasses() {
-            $('.magnitude').each((idx, elem) => {
+        function applyTagClasses($cards) {
+            $cards.find('.magnitude').each((idx, elem) => {
                 const magnitude = $(elem).data('magnitude');
                 const magnitudeClass = STATE.magnitudeClassLookup[magnitude] || '';
                 $(elem).addClass(magnitudeClass);
             });
 
-            $('.variety').each((idx, elem) => {
+            $cards.find('.variety').each((idx, elem) => {
                 const variety = $(elem).data('variety');
                 const varietyClass = STATE.varietyClassLookup[variety] || '';
                 $(elem).addClass(varietyClass);
@@ -235,7 +277,7 @@
 
             if (!surprise || (!surprise.viewed && !surprise.revealDate)) {
                 return `
-                    <div class="${cardClass} upcoming" onclick="handleClick(this)">
+                    <div class="${cardClass} upcoming" data-slot="${number}" onclick="handleClick(this)">
                         <div class="${iconClass} opacity-40">${number}</div>
                     </div>
                 `;
@@ -246,13 +288,18 @@
             const revealLabel = formatRevealDate(revealDate);
             const titleOpacity = surprise.viewed ? 'opacity-100' : 'opacity-0';
             const iconOpacity = surprise.viewed ? 'opacity-10' : 'opacity-30';
-            const cardClasses = `${cardClass} ${stateClass}`.trim();
+            const isExpansion = surprise.type === 'expansion';
+            const expansionClass = isExpansion && surprise.viewed ? 'expansion-opened' : '';
+            const cardClasses = `${cardClass} ${stateClass} ${expansionClass}`.trim();
+            const extraSlots = Number(surprise.extraSlots) || 0;
 
             return `
                 <div
                     class="${cardClasses}"
                     data-reveal-date="${escapeHtml(revealDate)}"
                     data-id="${escapeHtml(surprise.id)}"
+                    data-slot="${number}"
+                    data-type="${isExpansion ? 'expansion' : 'normal'}"
                     onclick="handleClick(this)"
                 >
                     <div class="${iconClass} icon-container transition-all duration-1000 ${iconOpacity}">
@@ -266,6 +313,11 @@
                         </div>
                         <h1 class="transition-all duration-1000 text-base sm:text-lg ${titleOpacity} mb-1 sm:mb-2 font-extrabold">${escapeHtml(surprise.title)}</h1>
                         <p class="transition-all duration-1000 text-xs sm:text-base overflow-auto h-24 ${titleOpacity}">${escapeHtml(surprise.description)}</p>
+                        ${isExpansion ? `
+                            <div class="expansion-badge transition-all duration-1000 ${titleOpacity}">
+                                <span>+${extraSlots} surprise${extraSlots === 1 ? '' : 's'}</span>
+                            </div>
+                        ` : ''}
                         ${(!surprise.viewed && surprise.revealDate) ? `
                             <div class="countdown-container absolute w-full h-40 text-gray-500 text-lg sm:text-xl text-center bottom-0 left-0">
                                 <div class="transition-all duration-1000 opacity-100 countdown absolute w-full bottom-0"></div>
@@ -291,10 +343,16 @@
             }
 
             try {
-                await requestJson(`/surprises/${surpriseID}/viewed`, {
+                const res = await requestJson(`/surprises/${surpriseID}/viewed`, {
                     method: 'PUT',
                     body: new URLSearchParams({ viewed: 'true' }),
                 });
+
+                const stateSurprise = STATE.surprises.find(s => String(s.id) === String(surpriseID));
+                if (stateSurprise) {
+                    stateSurprise.viewed = true;
+                }
+                const isExpansion = $(surpriseCard).data('type') === 'expansion';
 
                 $(surpriseCard).removeClass('time-to-view').addClass('viewed');
                 if (surpriseCard.classList.contains('mini-wordle-btn') || surpriseCard.querySelector('.mini-wordle-btn')) {
@@ -335,14 +393,19 @@
                         setTimeout(() => {
                             $(surpriseCard).find('h1').toggleClass('opacity-0 opacity-100');
                             $(surpriseCard).find('p').toggleClass('opacity-0 opacity-100');
+
+                            if (isExpansion) {
+                                setTimeout(() => {
+                                    $(surpriseCard).addClass('expansion-opened');
+                                    $(surpriseCard).find('.expansion-badge').toggleClass('opacity-0 opacity-100');
+                                    setTimeout(() => expandBoard(res.totalSlots), 1000);
+                                }, 1000);
+                            }
                         }, 1000);
                     }, 1000);
                 }, 1000);
 
-                const currentValue = parseInt($('#surprises-left-value').text(), 10);
-                if (!Number.isNaN(currentValue)) {
-                    updateSurprisesLeftDisplay(Math.max(currentValue - 1, 0));
-                }
+                updateSurprisesLeftDisplay(countSurprisesLeft());
             } catch (error) {
                 swal({
                     title: 'Error',

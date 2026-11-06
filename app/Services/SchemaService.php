@@ -85,6 +85,28 @@ final class SchemaService
             $db->exec('CREATE INDEX idx_surprises_notified_at ON surprises(notified_at)');
         }
 
+        // Expansion surprises unlock extra slots on the board once they are opened.
+        if (!$this->mysqlColumnExists($db, 'surprises', 'type')) {
+            $db->exec('ALTER TABLE surprises ADD COLUMN type ENUM("normal","expansion") NOT NULL DEFAULT "normal" AFTER variety');
+        }
+
+        if (!$this->mysqlColumnExists($db, 'surprises', 'extra_slots')) {
+            $db->exec('ALTER TABLE surprises ADD COLUMN extra_slots INT UNSIGNED NOT NULL DEFAULT 0 AFTER type');
+        }
+
+        $db->exec(
+            'CREATE TABLE IF NOT EXISTS settings (
+                name VARCHAR(100) NOT NULL PRIMARY KEY,
+                value VARCHAR(255) NOT NULL,
+                updated_at DATETIME NOT NULL
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4'
+        );
+
+        $db->exec(sprintf(
+            'INSERT IGNORE INTO settings (name, value, updated_at) VALUES ("base_surprise_slots", "%d", UTC_TIMESTAMP())',
+            SettingsRepository::DEFAULT_BASE_SURPRISE_SLOTS
+        ));
+
         $db->exec(
             'CREATE TABLE IF NOT EXISTS wordle_games (
                 id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -164,6 +186,27 @@ final class SchemaService
         if (!$this->sqliteColumnExists($db, 'surprises', 'notified_at')) {
             $db->exec('ALTER TABLE surprises ADD COLUMN notified_at TEXT NULL');
         }
+
+        if (!$this->sqliteColumnExists($db, 'surprises', 'type')) {
+            $db->exec('ALTER TABLE surprises ADD COLUMN type TEXT NOT NULL DEFAULT "normal"');
+        }
+
+        if (!$this->sqliteColumnExists($db, 'surprises', 'extra_slots')) {
+            $db->exec('ALTER TABLE surprises ADD COLUMN extra_slots INTEGER NOT NULL DEFAULT 0');
+        }
+
+        $db->exec(
+            'CREATE TABLE IF NOT EXISTS settings (
+                name TEXT NOT NULL PRIMARY KEY,
+                value TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            )'
+        );
+
+        $db->exec(sprintf(
+            "INSERT OR IGNORE INTO settings (name, value, updated_at) VALUES ('base_surprise_slots', '%d', datetime('now'))",
+            SettingsRepository::DEFAULT_BASE_SURPRISE_SLOTS
+        ));
 
         $db->exec(
             'CREATE TABLE IF NOT EXISTS wordle_games (

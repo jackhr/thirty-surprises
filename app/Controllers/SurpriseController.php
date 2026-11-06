@@ -19,7 +19,10 @@ final class SurpriseController
     {
         try {
             $repository = new SurpriseRepository();
-            Response::json($repository->getLiveSorted());
+            Response::json([
+                'surprises' => $repository->getLiveSorted(),
+                'totalSlots' => $repository->getTotalSlots(),
+            ]);
         } catch (Throwable $exception) {
             Response::json(['error' => $exception->getMessage()], 500);
         }
@@ -97,7 +100,10 @@ final class SurpriseController
                 Response::json(['error' => 'Surprise not found'], 404);
             }
 
-            Response::json($surprise);
+            Response::json([
+                ...$surprise,
+                'totalSlots' => $repository->getTotalSlots(),
+            ]);
         } catch (Throwable $exception) {
             Response::json(['error' => $exception->getMessage()]);
         }

@@ -1415,3 +1415,42 @@ select {
     overflow: hidden;
   }
 }
+/* "More surprises" (expansion) card, once it has been opened */
+.surprise-card.expansion-opened {
+    border-color: #f472b6;
+    box-shadow: 0 0 0 2px #fbcfe8, 0 0 22px rgba(236, 72, 153, 0.35);
+    transition: border-color 1s ease, box-shadow 1s ease;
+}
+
+.expansion-badge {
+    position: absolute;
+    left: 0;
+    bottom: 0.4rem;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
+}
+
+.expansion-badge span {
+    border-radius: 9999px;
+    background: #ec4899;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1.25rem;
+    padding: 0 0.75rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* New slots unlocked by an expansion surprise fade in one after another */
+.slot-enter {
+    opacity: 0;
+    transform: translateY(12px) scale(0.95);
+    transition: opacity 600ms ease, transform 600ms ease;
+}
+
+.slot-enter.slot-entered {
+    opacity: 1;
+    transform: none;
+}
