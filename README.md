@@ -91,11 +91,17 @@ Open `http://localhost:8000`.
 
 Compiled CSS lives at `public/stylesheets/output.css`.
 
-To rebuild:
+Rebuild it locally after changing any classes, then commit `output.css`. The server never runs Tailwind.
 
-1. Download standalone Tailwind CLI binary to `bin/tailwindcss`
-2. `chmod +x bin/tailwindcss`
-3. `./scripts/build-tailwind.sh --minify`
+```sh
+./scripts/build-tailwind.sh          # one-off build
+./scripts/build-tailwind.sh --watch  # rebuild on save while developing
+./scripts/build-tailwind.sh --minify # smaller output
+```
+
+- On first run the script downloads the standalone Tailwind CLI (pinned in the script, currently v3.4.17) to `bin/tailwindcss`. `bin/` is gitignored.
+- `tailwind.config.js` lists the files scanned for class names (`app/**/*.php`, `public/scripts/**/*.js`). A class only gets generated if it appears as a complete string in one of those files, so don't build class names by concatenation (e.g. `'text-' + color`).
+- Plain CSS (non-Tailwind rules) goes in `public/stylesheets/style.css`.
 
 ## Routes
 
